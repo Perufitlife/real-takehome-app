@@ -4,6 +4,8 @@ Take-home pay calculator for US hourly workers.
 
 Perfect for blue collar and healthcare workers who need to know their real paycheck after taxes.
 
+**Requirements:** Node 18 or 20 (recommended). Node 23+ can trigger a type-stripping warning with Expo; use `nvm use` to switch to Node 20 (see `.nvmrc`).
+
 ## Features
 
 - 📊 Instant take-home pay calculator
