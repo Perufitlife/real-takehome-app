@@ -1,0 +1,11 @@
+# WorkROI Robots.txt
+# https://workroi.app
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://workroi.app/sitemap.xml
+
+# Disallow admin or private paths (none currently)
+# Disallow: /admin/
