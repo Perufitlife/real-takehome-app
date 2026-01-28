@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Real TakeHome",
-    "slug": "real-takehome",
+    "name": "Work Hours & Paycheck Calc",
+    "slug": "workroi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,14 +13,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.realtakehome.app"
+      "bundleIdentifier": "com.workroi.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.realtakehome.app"
+      "package": "com.workroi.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -30,17 +30,17 @@
       "expo-updates",
       "expo-asset"
     ],
-    "scheme": "realtakehome",
+    "scheme": "workroi",
     "runtimeVersion": "1.0.0",
     "updates": {
-      "url": "https://u.expo.dev/[YOUR-PROJECT-ID]"
+      "url": "https://u.expo.dev/YOUR-PROJECT-ID"
     },
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "TBD"
+        "projectId": "YOUR-PROJECT-ID"
       }
     }
   }

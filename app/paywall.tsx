@@ -81,10 +81,10 @@ export default function PaywallScreen() {
   };
 
   const potentialSavings = calculatePotentialSavings();
-  const monthlyPrice = offerings?.current?.monthly?.product?.priceString || '$4.99';
-  const annualPrice = offerings?.current?.annual?.product?.priceString || '$24.99';
-  const monthlyEquivalent = '$2.08';
-  const savingsPercent = '58%';
+  const monthlyPrice = offerings?.current?.monthly?.product?.priceString || '$9.99';
+  const annualPrice = offerings?.current?.annual?.product?.priceString || '$59.99';
+  const monthlyEquivalent = '$4.99';
+  const savingsPercent = '50%';
 
   const handlePurchase = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -101,7 +101,7 @@ export default function PaywallScreen() {
       
       trackEvent('purchase_completed', { 
         plan: selectedPlan,
-        revenue: selectedPlan === 'annual' ? 24.99 : 4.99,
+        revenue: selectedPlan === 'annual' ? 59.99 : 9.99,
       });
       
       // Navigate to dashboard
@@ -196,6 +196,7 @@ export default function PaywallScreen() {
             <View style={styles.savingsBadge}>
               <Text style={styles.savingsText}>SAVE {savingsPercent}</Text>
             </View>
+            <Text style={styles.bonusText}>+ Bonus tools upcoming</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -216,23 +217,23 @@ export default function PaywallScreen() {
       {/* CTA */}
       <View style={[styles.ctaSection, { paddingBottom: insets.bottom + Spacing.md }]}>
         <PrimaryButton
-          title={purchasing ? 'Processing...' : 'Start Free Trial'}
+          title={purchasing ? 'Processing...' : 'Get Premium'}
           onPress={handlePurchase}
           disabled={purchasing}
           loading={purchasing}
         />
         
         <Text style={styles.trialInfo}>
-          7-day free trial, cancel anytime
+          Cancel anytime from your device settings
         </Text>
 
         {/* Footer Links */}
         <View style={styles.footerLinks}>
-          <TouchableOpacity onPress={() => Linking.openURL('https://realtakehome.app/terms')}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://workroi.app/terms.html')}>
             <Text style={styles.footerLink}>Terms</Text>
           </TouchableOpacity>
           <Text style={styles.footerDivider}>·</Text>
-          <TouchableOpacity onPress={() => Linking.openURL('https://realtakehome.app/privacy')}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://workroi.app/privacy.html')}>
             <Text style={styles.footerLink}>Privacy</Text>
           </TouchableOpacity>
           <Text style={styles.footerDivider}>·</Text>
@@ -373,6 +374,12 @@ const styles = StyleSheet.create({
     fontSize: moderateScale(11),
     fontWeight: '700',
     color: Colors.success,
+  },
+  bonusText: {
+    fontSize: moderateScale(11),
+    fontWeight: '600',
+    color: Colors.primary,
+    marginTop: Spacing.xs,
   },
   featuresSection: {
     marginBottom: Spacing.xl,

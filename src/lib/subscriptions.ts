@@ -85,14 +85,14 @@ export const getOfferings = async (): Promise<PurchasesOfferings | null> => {
       current: {
         monthly: {
           product: {
-            priceString: '$4.99',
-            price: 4.99,
+            priceString: '$9.99',
+            price: 9.99,
           },
         },
         annual: {
           product: {
-            priceString: '$24.99',
-            price: 24.99,
+            priceString: '$59.99',
+            price: 59.99,
           },
         },
       },
