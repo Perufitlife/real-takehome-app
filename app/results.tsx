@@ -8,7 +8,7 @@ import { trackEvent } from '../src/lib/analytics';
 import { usePayInput } from '../src/context/PayInputContext';
 import { incrementCalculations, maybeRequestReview } from '../src/lib/reviewService';
 import { hasFullBreakdown } from '../src/lib/subscriptions';
-import { Colors, Typography, Spacing, BorderRadius, formatCurrency, formatHourly, getStateName, scale, moderateScale, isSmallDevice } from '../src/constants/theme';
+import { Colors, Typography, Spacing, BorderRadius, formatCurrency, formatHourly, getStateName, scale, moderateScale, isSmallDevice, isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 import { PrimaryButton } from '../src/components';
 
 export default function ResultsScreen() {
@@ -209,6 +209,11 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   errorContainer: {
     justifyContent: 'center',

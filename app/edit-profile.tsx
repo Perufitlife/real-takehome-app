@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { usePayInput } from '../src/context/PayInputContext';
 import { trackEvent } from '../src/lib/analytics';
 import { PrimaryButton } from '../src/components';
-import { Colors, Spacing, BorderRadius, getStateName, scale, moderateScale } from '../src/constants/theme';
+import { Colors, Spacing, BorderRadius, getStateName, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 import { getAllStatesWithTax } from '../src/lib/payCalculator';
 
 export default function EditProfileScreen() {
@@ -389,6 +389,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.lg,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   headerButton: {
     width: scale(40),
@@ -404,6 +409,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   section: {
     marginBottom: Spacing.xxl,

@@ -13,10 +13,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.workroi.app",
+      "bundleIdentifier": "com.renzo.workhours",
       "buildNumber": "1",
       "infoPlist": {
-        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads and improve app experience."
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads and improve app experience.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -24,7 +25,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.workroi.app",
+      "package": "com.renzo.workhours",
       "versionCode": 1
     },
     "web": {
@@ -34,7 +35,7 @@
       "expo-router",
       "expo-updates",
       "expo-asset",
-      "expo-store-review"
+      "expo-font"
     ],
     "scheme": "workroi",
     "runtimeVersion": "1.0.0",
@@ -47,7 +48,10 @@
       },
       "eas": {
         "projectId": "b93d67dd-77f9-4d2e-b8e9-854932ea6e29"
-      }
+      },
+      "revenueCatApiKey": "appl_khghPkpECqanPDcBHdOMfAGwitR",
+      "posthogApiKey": "phc_TiwSmrla4n1PUESbeuiHLqmwnsARB4ROsuDE28oSmmH",
+      "posthogHost": "https://app.posthog.com"
     }
   }
 }

@@ -6,7 +6,7 @@ import * as Haptics from 'expo-haptics';
 import { trackEvent } from '../../src/lib/analytics';
 import { usePayInput } from '../../src/context/PayInputContext';
 import { getHourlyRateBucket, getHoursPerWeekBucket } from '../../src/lib/payCalculator';
-import { Colors, Spacing, BorderRadius, scale, moderateScale } from '../../src/constants/theme';
+import { Colors, Spacing, BorderRadius, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH } from '../../src/constants/theme';
 import { OnboardingHeader, PrimaryButton } from '../../src/components';
 
 const TOTAL_STEPS = 7;
@@ -72,60 +72,62 @@ export default function FilingScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
-      {/* Header */}
-      <OnboardingHeader currentStep={5} totalSteps={TOTAL_STEPS} />
+      <View style={styles.contentWrapper}>
+        {/* Header */}
+        <OnboardingHeader currentStep={5} totalSteps={TOTAL_STEPS} />
 
-      {/* Title */}
-      <View style={styles.titleSection}>
-        <Text style={styles.title}>Tax filing status</Text>
-        <Text style={styles.optional}>(optional)</Text>
-        <Text style={styles.subtitle}>Affects your tax bracket</Text>
-      </View>
+        {/* Title */}
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>Tax filing status</Text>
+          <Text style={styles.optional}>(optional)</Text>
+          <Text style={styles.subtitle}>Affects your tax bracket</Text>
+        </View>
 
-      {/* Radio Options */}
-      <View style={styles.optionsContainer}>
-        {FILING_OPTIONS.map((option) => (
-          <TouchableOpacity
-            key={option.value}
-            style={[
-              styles.radioOption,
-              selectedStatus === option.value && styles.radioOptionSelected,
-            ]}
-            onPress={() => handleSelect(option.value)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.radioContent}>
-              <Text style={[
-                styles.radioTitle,
-                selectedStatus === option.value && styles.radioTitleSelected,
+        {/* Radio Options */}
+        <View style={styles.optionsContainer}>
+          {FILING_OPTIONS.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.radioOption,
+                selectedStatus === option.value && styles.radioOptionSelected,
+              ]}
+              onPress={() => handleSelect(option.value)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.radioContent}>
+                <Text style={[
+                  styles.radioTitle,
+                  selectedStatus === option.value && styles.radioTitleSelected,
+                ]}>
+                  {option.title}
+                </Text>
+                <Text style={styles.radioSubtitle}>{option.subtitle}</Text>
+              </View>
+              <View style={[
+                styles.radioCircle,
+                selectedStatus === option.value && styles.radioCircleSelected,
               ]}>
-                {option.title}
-              </Text>
-              <Text style={styles.radioSubtitle}>{option.subtitle}</Text>
-            </View>
-            <View style={[
-              styles.radioCircle,
-              selectedStatus === option.value && styles.radioCircleSelected,
-            ]}>
-              {selectedStatus === option.value && <View style={styles.radioInner} />}
-            </View>
+                {selectedStatus === option.value && <View style={styles.radioInner} />}
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Spacer */}
+        <View style={styles.spacer} />
+
+        {/* CTA Section */}
+        <View style={[styles.ctaSection, { paddingBottom: insets.bottom + Spacing.md }]}>
+          <PrimaryButton
+            title={buttonLabel}
+            onPress={handleContinue}
+          />
+          
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+            <Text style={styles.skipText}>Skip - use Single</Text>
           </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Spacer */}
-      <View style={styles.spacer} />
-
-      {/* CTA Section */}
-      <View style={[styles.ctaSection, { paddingBottom: insets.bottom + Spacing.md }]}>
-        <PrimaryButton
-          title={buttonLabel}
-          onPress={handleContinue}
-        />
-        
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipText}>Skip - use Single</Text>
-        </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -136,6 +138,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? { alignItems: 'center' as const } : {}),
+  },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   titleSection: {
     alignItems: 'center',

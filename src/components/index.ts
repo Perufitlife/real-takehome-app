@@ -9,6 +9,7 @@ export { FeatureCard } from './FeatureCard';
 
 // Onboarding Components
 export { ScreenWrapper } from './ScreenWrapper';
+export { ResponsiveContainer, useResponsivePadding } from './ResponsiveContainer';
 export { OnboardingProgress } from './OnboardingProgress';
 export { OnboardingHeader } from './OnboardingHeader';
 export { NumericKeypad } from './NumericKeypad';

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { trackEvent } from '../../src/lib/analytics';
 import { usePayInput } from '../../src/context/PayInputContext';
-import { Colors, Spacing, scale, moderateScale, isSmallDevice } from '../../src/constants/theme';
+import { Colors, Spacing, scale, moderateScale, isSmallDevice, isTablet, MAX_CONTENT_WIDTH } from '../../src/constants/theme';
 import { OnboardingHeader, NumericKeypad, PrimaryButton } from '../../src/components';
 
 const TOTAL_STEPS = 7;
@@ -85,68 +85,70 @@ export default function HoursScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
-      {/* Header */}
-      <OnboardingHeader currentStep={3} totalSteps={TOTAL_STEPS} />
+      <View style={styles.contentWrapper}>
+        {/* Header */}
+        <OnboardingHeader currentStep={3} totalSteps={TOTAL_STEPS} />
 
-      {/* Title Section */}
-      <View style={styles.titleSection}>
-        <Text style={styles.title}>How many hours per week?</Text>
-      </View>
+        {/* Title Section */}
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>How many hours per week?</Text>
+        </View>
 
-      {/* Display */}
-      <View style={styles.displayContainer}>
-        <Text style={[styles.display, error && styles.displayError]}>
-          {hours || '40'}
-          <Text style={styles.unit}> hrs</Text>
-        </Text>
-        <View style={[styles.underline, isOvertime && styles.underlineOvertime]} />
-        
-        {/* Dynamic hint */}
-        <Text style={[styles.hint, isOvertime && styles.hintOvertime]}>
-          {isOvertime ? 'Overtime starts after 40h' : 'Most full-time = 40h'}
-        </Text>
-        
-        {error && <Text style={styles.errorText}>{error}</Text>}
-      </View>
+        {/* Display */}
+        <View style={styles.displayContainer}>
+          <Text style={[styles.display, error && styles.displayError]}>
+            {hours || '40'}
+            <Text style={styles.unit}> hrs</Text>
+          </Text>
+          <View style={[styles.underline, isOvertime && styles.underlineOvertime]} />
+          
+          {/* Dynamic hint */}
+          <Text style={[styles.hint, isOvertime && styles.hintOvertime]}>
+            {isOvertime ? 'Overtime starts after 40h' : 'Most full-time = 40h'}
+          </Text>
+          
+          {error && <Text style={styles.errorText}>{error}</Text>}
+        </View>
 
-      {/* Quick Select Presets */}
-      <View style={styles.presetsContainer}>
-        {PRESETS.map((preset) => (
-          <TouchableOpacity
-            key={preset}
-            style={[
-              styles.presetButton,
-              Number(hours) === preset && styles.presetButtonActive,
-            ]}
-            onPress={() => handlePreset(preset)}
-            activeOpacity={0.7}
-          >
-            <Text style={[
-              styles.presetText,
-              Number(hours) === preset && styles.presetTextActive,
-            ]}>
-              {preset}h
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+        {/* Quick Select Presets */}
+        <View style={styles.presetsContainer}>
+          {PRESETS.map((preset) => (
+            <TouchableOpacity
+              key={preset}
+              style={[
+                styles.presetButton,
+                Number(hours) === preset && styles.presetButtonActive,
+              ]}
+              onPress={() => handlePreset(preset)}
+              activeOpacity={0.7}
+            >
+              <Text style={[
+                styles.presetText,
+                Number(hours) === preset && styles.presetTextActive,
+              ]}>
+                {preset}h
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      {/* Spacer */}
-      <View style={styles.spacer} />
+        {/* Spacer */}
+        <View style={styles.spacer} />
 
-      {/* Keypad */}
-      <NumericKeypad
-        onPress={handleNumber}
-        onBackspace={handleBackspace}
-      />
-
-      {/* Bottom Section */}
-      <View style={[styles.bottomSection, { paddingBottom: insets.bottom + Spacing.md }]}>
-        <PrimaryButton
-          title="Continue"
-          onPress={handleContinue}
-          disabled={!isValid}
+        {/* Keypad */}
+        <NumericKeypad
+          onPress={handleNumber}
+          onBackspace={handleBackspace}
         />
+
+        {/* Bottom Section */}
+        <View style={[styles.bottomSection, { paddingBottom: insets.bottom + Spacing.md }]}>
+          <PrimaryButton
+            title="Continue"
+            onPress={handleContinue}
+            disabled={!isValid}
+          />
+        </View>
       </View>
     </View>
   );
@@ -157,6 +159,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? { alignItems: 'center' as const } : {}),
+  },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   titleSection: {
     alignItems: 'center',

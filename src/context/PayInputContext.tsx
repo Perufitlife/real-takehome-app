@@ -28,6 +28,8 @@ interface PayInputContextType {
   contributionType: 'percent' | 'dollar' | null;
   hasOvertime: boolean | null;
   overtimeMultiplier: number;
+  // Loading state
+  isLoaded: boolean;
 
   setPayType: (type: 'salary' | 'hourly') => void;
   setAnnualSalary: (amount: number) => void;
@@ -44,6 +46,7 @@ interface PayInputContextType {
   calculatePay: () => PayResult | null;
   resetInputs: () => void;
   isComplete: () => boolean;
+  waitForLoad: () => Promise<void>;
 }
 
 const PayInputContext = createContext<PayInputContextType | undefined>(undefined);
@@ -51,6 +54,10 @@ const PayInputContext = createContext<PayInputContextType | undefined>(undefined
 interface PayInputProviderProps {
   children: ReactNode;
 }
+
+// Promise resolver for waitForLoad
+let loadResolve: (() => void) | null = null;
+let loadPromise: Promise<void> = new Promise((resolve) => { loadResolve = resolve; });
 
 export function PayInputProvider({ children }: PayInputProviderProps) {
   const [payType, setPayTypeState] = useState<'salary' | 'hourly' | null>(null);
@@ -64,6 +71,8 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
   const [contributionType, setContributionTypeState] = useState<'percent' | 'dollar' | null>(null);
   const [hasOvertime, setHasOvertimeState] = useState<boolean | null>(null);
   const [overtimeMultiplier, setOvertimeMultiplierState] = useState<number>(1.5);
+  // Loading state
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -104,6 +113,9 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
         if (loadedOvertimeMultiplier != null) setOvertimeMultiplierState(Number(loadedOvertimeMultiplier));
       } catch (e) {
         console.warn('PayInputContext: load from storage failed', e);
+      } finally {
+        setIsLoaded(true);
+        if (loadResolve) loadResolve();
       }
     })();
   }, []);
@@ -201,6 +213,11 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
     return true;
   };
 
+  const waitForLoad = async (): Promise<void> => {
+    if (isLoaded) return;
+    await loadPromise;
+  };
+
   const resetInputs = () => {
     setPayTypeState(null);
     setAnnualSalaryState(null);
@@ -227,6 +244,7 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
     contributionType,
     hasOvertime,
     overtimeMultiplier,
+    isLoaded,
     setPayType,
     setAnnualSalary,
     setHourlyRate,
@@ -240,6 +258,7 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
     calculatePay,
     resetInputs,
     isComplete,
+    waitForLoad,
   };
 
   return (

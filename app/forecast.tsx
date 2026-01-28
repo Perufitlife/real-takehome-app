@@ -6,7 +6,7 @@ import { usePayInput } from '../src/context/PayInputContext';
 import { trackEvent } from '../src/lib/analytics';
 import { hasFullBreakdown } from '../src/lib/subscriptions';
 import { Card, Button, NumberDisplay, InsightBadge, PremiumBadge } from '../src/components';
-import { Colors, Typography, Spacing, formatCurrency, BorderRadius } from '../src/constants/theme';
+import { Colors, Typography, Spacing, formatCurrency, BorderRadius, isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 import { forecastMonthly, forecastYearly, MonthlyForecast, YearlyForecast } from '../src/lib/payCalculator';
 
 type ForecastPeriod = 'month' | 'year';
@@ -339,6 +339,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     padding: Spacing.xxl,
     paddingTop: Spacing.massive,
+    ...(isTablet ? {
+      alignItems: 'center' as const,
+    } : {}),
+  },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   backButton: {
     marginBottom: Spacing.lg,

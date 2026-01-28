@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,9 +8,9 @@ import * as Haptics from 'expo-haptics';
 import { trackEvent } from '../src/lib/analytics';
 import { maybeRequestReview } from '../src/lib/reviewService';
 import { usePayInput } from '../src/context/PayInputContext';
-import { getOfferings, purchasePackage, hasFullBreakdown } from '../src/lib/subscriptions';
+import { getOfferings, purchasePackage, hasFullBreakdown, restorePurchases } from '../src/lib/subscriptions';
 import { calculateOvertimePay, getStateName } from '../src/lib/payCalculator';
-import { Colors, Spacing, BorderRadius, formatCurrency, scale, moderateScale } from '../src/constants/theme';
+import { Colors, Spacing, BorderRadius, formatCurrency, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH, responsive } from '../src/constants/theme';
 import { PrimaryButton } from '../src/components';
 
 const isExpoGo = Constants.appOwnership === 'expo';
@@ -23,6 +23,7 @@ export default function PaywallScreen() {
   
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('annual');
   const [offerings, setOfferings] = useState<any>(null);
   const [canClose, setCanClose] = useState(false);
@@ -88,29 +89,42 @@ export default function PaywallScreen() {
   const savingsPercent = '50%';
 
   const handlePurchase = async () => {
+    const pkg = selectedPlan === 'annual'
+      ? offerings?.current?.annual
+      : offerings?.current?.monthly;
+
+    if (!pkg) {
+      Alert.alert(
+        'Subscription Unavailable',
+        'Unable to load subscription options. Please check your connection and try again, or restart the app.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setPurchasing(true);
-    
     trackEvent('purchase_started', { plan: selectedPlan });
-    
+
     try {
-      const pkg = selectedPlan === 'annual' 
-        ? offerings?.current?.annual 
-        : offerings?.current?.monthly;
-      
       await purchasePackage(pkg, selectedPlan);
-      
-      trackEvent('purchase_completed', { 
+      trackEvent('purchase_completed', {
         plan: selectedPlan,
         revenue: selectedPlan === 'annual' ? 59.99 : 9.99,
       });
 
       maybeRequestReview('purchase_completed');
-
-      // Navigate to dashboard
       router.replace('/(tabs)');
     } catch (error: any) {
       console.error('Purchase error:', error);
+      const isCancelled = error?.message === 'Purchase cancelled';
+      if (!isCancelled) {
+        Alert.alert(
+          'Purchase Failed',
+          error?.message || 'Something went wrong. Please try again or use Restore if you already subscribed.',
+          [{ text: 'OK' }]
+        );
+      }
       trackEvent('purchase_cancelled', { plan: selectedPlan });
     } finally {
       setPurchasing(false);
@@ -122,10 +136,34 @@ export default function PaywallScreen() {
     router.back();
   };
 
-  const handleRestore = () => {
+  const handleRestore = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     trackEvent('restore_purchases_clicked');
-    // In production, would restore purchases
+    setRestoring(true);
+    try {
+      const customerInfo = await restorePurchases();
+      const hasAccess = customerInfo?.entitlements?.active?.full_breakdown != null;
+      if (hasAccess) {
+        Alert.alert('Restore Complete', 'Your subscription has been restored.', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') },
+        ]);
+      } else {
+        Alert.alert(
+          'No Subscription Found',
+          'We couldn\'t find an active subscription for this account. If you recently subscribed, try again in a moment.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error: any) {
+      console.error('Restore error:', error);
+      Alert.alert(
+        'Restore Failed',
+        error?.message || 'Unable to restore purchases. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setRestoring(false);
+    }
   };
 
   if (loading) {
@@ -138,15 +176,16 @@ export default function PaywallScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.lg }]}>
-      {/* Close Button (only if allowed) */}
-      {canClose && (
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-          <Ionicons name="close" size={scale(28)} color={Colors.textTertiary} />
-        </TouchableOpacity>
-      )}
+      <View style={styles.contentInner}>
+        {/* Close Button (only if allowed) */}
+        {canClose && (
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Ionicons name="close" size={scale(28)} color={Colors.textTertiary} />
+          </TouchableOpacity>
+        )}
 
-      {/* Personalized Hero */}
-      <View style={styles.heroSection}>
+        {/* Personalized Hero */}
+        <View style={styles.heroSection}>
         <Text style={styles.heroContext}>
           Based on {formatCurrency(payInput.hourlyRate || 18)}/hr in {getStateName(payInput.state || 'TX')}...
         </Text>
@@ -240,8 +279,10 @@ export default function PaywallScreen() {
             <Text style={styles.footerLink}>Privacy</Text>
           </TouchableOpacity>
           <Text style={styles.footerDivider}>·</Text>
-          <TouchableOpacity onPress={handleRestore}>
-            <Text style={styles.footerLink}>Restore</Text>
+          <TouchableOpacity onPress={handleRestore} disabled={restoring}>
+            <Text style={[styles.footerLink, restoring && styles.footerLinkDisabled]}>
+              {restoring ? 'Restoring...' : 'Restore'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -251,6 +292,7 @@ export default function PaywallScreen() {
             <Text style={styles.devBadgeText}>DEV MODE - Purchase will be simulated</Text>
           </View>
         )}
+      </View>
       </View>
     </View>
   );
@@ -270,6 +312,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? {
+      alignItems: 'center' as const,
+    } : {}),
+  },
+  // Inner content wrapper for tablet centering
+  contentInner: {
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   loadingContainer: {
     justifyContent: 'center',
@@ -422,6 +472,9 @@ const styles = StyleSheet.create({
   footerLink: {
     fontSize: moderateScale(13),
     color: Colors.textTertiary,
+  },
+  footerLinkDisabled: {
+    opacity: 0.5,
   },
   footerDivider: {
     fontSize: moderateScale(13),

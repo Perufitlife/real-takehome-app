@@ -1,8 +1,9 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 
 export default function PayExplainerScreen() {
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <Text style={styles.title}>How we calculated your pay</Text>
 
       <View style={styles.section}>
@@ -29,8 +30,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  scrollContent: {
     padding: 24,
     paddingTop: 60,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   title: {
     fontSize: 28,

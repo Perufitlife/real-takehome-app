@@ -4,7 +4,7 @@ Take-home pay calculator for US hourly workers.
 
 Perfect for blue collar and healthcare workers who need to know their real paycheck after taxes.
 
-**Requirements:** Node 18 or 20 (recommended). Node 23+ can trigger a type-stripping warning with Expo; use `nvm use` to switch to Node 20 (see `.nvmrc`).
+**Requirements:** Node 20 (see `.nvmrc`). Node 22+ breaks EAS build (`expo-modules-core`); use `fnm use 20` or `nvm use 20` before building.
 
 ## Features
 
@@ -88,8 +88,9 @@ See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for complete TestFlight setup
 
 Quick commands:
 ```bash
-# Build for iOS
-eas build --platform ios --profile production
+# Build for iOS (checks Node 20; use fnm use 20 or nvm use 20 if you have Node 22)
+npm run build:ios
+# or: eas build --platform ios --profile production
 
 # Submit to TestFlight
 eas submit --platform ios
@@ -145,6 +146,7 @@ Target: Hourly workers earning $15-30/hr who work overtime and want to maximize 
 - `npm start` - Start dev server
 - `npm run ios` - iOS simulator
 - `npm run android` - Android emulator
+- `npm run build:ios` - EAS iOS production build (requires Node 20)
 - `eas build` - Create production build
 - `eas submit` - Submit to App Store
 - `eas update` - Push OTA update

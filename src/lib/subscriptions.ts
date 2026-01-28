@@ -3,6 +3,32 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 
 let isConfigured = false;
+let initPromise: Promise<void> | null = null;
+let initResolve: (() => void) | null = null;
+
+// Create a promise that resolves when RevenueCat is initialized
+const createInitPromise = () => {
+  initPromise = new Promise<void>((resolve) => {
+    initResolve = resolve;
+  });
+};
+createInitPromise();
+
+// Wait for RevenueCat to be initialized (with timeout)
+export const waitForRevenueCatInit = async (timeoutMs: number = 3000): Promise<boolean> => {
+  if (isConfigured) return true;
+  if (isExpoGo) return true; // In Expo Go, we don't need RevenueCat
+  
+  try {
+    await Promise.race([
+      initPromise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs))
+    ]);
+    return true;
+  } catch {
+    return false; // Timeout - RevenueCat didn't initialize in time
+  }
+};
 
 // Detectar si estamos en Expo Go (desarrollo) vs build nativo (producción)
 const isExpoGo = Constants.appOwnership === 'expo';
@@ -10,13 +36,14 @@ const isExpoGo = Constants.appOwnership === 'expo';
 // Keys for AsyncStorage (Expo Go testing)
 const PREMIUM_KEY = 'premium_status';
 const PREMIUM_PLAN_KEY = 'premium_plan';
+const DEV_FORCE_FREE_KEY = 'dev_force_free'; // For testing: forces app to treat user as non-premium
 
 if (isExpoGo) {
   // Expo Go: using local premium status for testing
 }
 
 export const initializeRevenueCat = async () => {
-  const apiKey = process.env.REVENUECAT_API_KEY;
+  const apiKey = Constants.expoConfig?.extra?.revenueCatApiKey ?? process.env.REVENUECAT_API_KEY;
   
   if (!apiKey) {
     console.warn('RevenueCat API key not found. Subscriptions will be disabled.');
@@ -26,9 +53,13 @@ export const initializeRevenueCat = async () => {
   try {
     Purchases.configure({ apiKey });
     isConfigured = true;
+    // Resolve the init promise so waiters know we're ready
+    if (initResolve) initResolve();
     console.log('RevenueCat initialized successfully');
   } catch (error) {
     console.error('Failed to initialize RevenueCat:', error);
+    // Still resolve so we don't hang forever
+    if (initResolve) initResolve();
   }
 };
 
@@ -56,7 +87,28 @@ export const clearPremiumStatus = async (): Promise<void> => {
   await AsyncStorage.multiRemove([PREMIUM_KEY, PREMIUM_PLAN_KEY]);
 };
 
+// Force the app to treat user as non-premium (for testing purchase flow again)
+export const setDevForceFree = async (forceFree: boolean): Promise<void> => {
+  if (forceFree) {
+    await AsyncStorage.setItem(DEV_FORCE_FREE_KEY, 'true');
+  } else {
+    await AsyncStorage.removeItem(DEV_FORCE_FREE_KEY);
+  }
+};
+
+// Check if dev force free is enabled
+export const isDevForceFree = async (): Promise<boolean> => {
+  const value = await AsyncStorage.getItem(DEV_FORCE_FREE_KEY);
+  return value === 'true';
+};
+
 export const checkEntitlement = async (entitlementId: string): Promise<boolean> => {
+  // Check if dev force free is enabled (for testing purchase flow)
+  const forceFree = await AsyncStorage.getItem(DEV_FORCE_FREE_KEY);
+  if (forceFree === 'true') {
+    return false;
+  }
+
   // In Expo Go, check local storage
   if (isExpoGo) {
     const status = await AsyncStorage.getItem(PREMIUM_KEY);
@@ -70,7 +122,8 @@ export const checkEntitlement = async (entitlementId: string): Promise<boolean> 
 
   try {
     const customerInfo = await Purchases.getCustomerInfo();
-    return customerInfo.entitlements.active[entitlementId] !== undefined;
+    const hasEntitlement = customerInfo.entitlements.active[entitlementId] !== undefined;
+    return hasEntitlement;
   } catch (error) {
     console.error('Error checking entitlement:', error);
     return false;
@@ -128,6 +181,8 @@ export const purchasePackage = async (pkg: any, plan?: 'monthly' | 'annual'): Pr
 
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
+    // Clear dev force free flag on successful purchase
+    await AsyncStorage.removeItem(DEV_FORCE_FREE_KEY);
     return { customerInfo };
   } catch (error: any) {
     if (error.userCancelled) {

@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { trackEvent } from '../../src/lib/analytics';
 import { usePayInput } from '../../src/context/PayInputContext';
-import { Colors, Spacing, BorderRadius, scale, moderateScale, isSmallDevice } from '../../src/constants/theme';
+import { Colors, Spacing, BorderRadius, scale, moderateScale, isSmallDevice, isTablet, MAX_CONTENT_WIDTH } from '../../src/constants/theme';
 import { OnboardingHeader, PrimaryButton } from '../../src/components';
 
 const TOTAL_STEPS = 7;
@@ -61,109 +61,111 @@ export default function BenefitsScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
-      {/* Header */}
-      <OnboardingHeader currentStep={6} totalSteps={TOTAL_STEPS} />
+      <View style={styles.contentWrapper}>
+        {/* Header */}
+        <OnboardingHeader currentStep={6} totalSteps={TOTAL_STEPS} />
 
-      {/* Title */}
-      <View style={styles.titleSection}>
-        <Text style={styles.title}>Do you contribute to{'\n'}retirement savings?</Text>
-        <Text style={styles.subtitle}>Most people skip this step</Text>
-      </View>
-
-      {/* Options */}
-      {contributes === null && (
-        <View style={styles.optionsContainer}>
-          {/* Yes Option */}
-          <TouchableOpacity
-            style={styles.optionCard}
-            onPress={() => handleContributeSelect(true)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.optionIcon}>
-              <Ionicons name="wallet-outline" size={scale(28)} color={Colors.success} />
-            </View>
-            <View style={styles.optionContent}>
-              <Text style={styles.optionTitle}>Yes, I contribute</Text>
-              <Text style={styles.optionSubtitle}>401k or similar pre-tax savings</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={scale(22)} color={Colors.textTertiary} />
-          </TouchableOpacity>
-
-          {/* No Option */}
-          <TouchableOpacity
-            style={[styles.optionCard, styles.optionCardRecommended]}
-            onPress={() => handleContributeSelect(false)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.optionIcon}>
-              <Ionicons name="close-circle-outline" size={scale(28)} color={Colors.textSecondary} />
-            </View>
-            <View style={styles.optionContent}>
-              <Text style={styles.optionTitle}>No / Skip</Text>
-              <Text style={styles.optionSubtitle}>Most common choice</Text>
-            </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>Recommended</Text>
-            </View>
-          </TouchableOpacity>
+        {/* Title */}
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>Do you contribute to{'\n'}retirement savings?</Text>
+          <Text style={styles.subtitle}>Most people skip this step</Text>
         </View>
-      )}
 
-      {/* Contribution Slider (shown if Yes selected) */}
-      {contributes === true && (
-        <View style={styles.sliderSection}>
-          <Text style={styles.sliderLabel}>How much per paycheck?</Text>
-          
-          <View style={styles.displayContainer}>
-            <Text style={styles.displayValue}>{percentage}%</Text>
-            <Text style={styles.displayHint}>of your gross pay</Text>
+        {/* Options */}
+        {contributes === null && (
+          <View style={styles.optionsContainer}>
+            {/* Yes Option */}
+            <TouchableOpacity
+              style={styles.optionCard}
+              onPress={() => handleContributeSelect(true)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.optionIcon}>
+                <Ionicons name="wallet-outline" size={scale(28)} color={Colors.success} />
+              </View>
+              <View style={styles.optionContent}>
+                <Text style={styles.optionTitle}>Yes, I contribute</Text>
+                <Text style={styles.optionSubtitle}>401k or similar pre-tax savings</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={scale(22)} color={Colors.textTertiary} />
+            </TouchableOpacity>
+
+            {/* No Option */}
+            <TouchableOpacity
+              style={[styles.optionCard, styles.optionCardRecommended]}
+              onPress={() => handleContributeSelect(false)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.optionIcon}>
+                <Ionicons name="close-circle-outline" size={scale(28)} color={Colors.textSecondary} />
+              </View>
+              <View style={styles.optionContent}>
+                <Text style={styles.optionTitle}>No / Skip</Text>
+                <Text style={styles.optionSubtitle}>Most common choice</Text>
+              </View>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>Recommended</Text>
+              </View>
+            </TouchableOpacity>
           </View>
+        )}
 
-          <View style={styles.sliderContainer}>
-            <Text style={styles.sliderMin}>0%</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={15}
-              step={1}
-              value={percentage}
-              onValueChange={(val) => setPercentage(Math.round(val))}
-              minimumTrackTintColor={Colors.success}
-              maximumTrackTintColor={Colors.cardBorder}
-              thumbTintColor={Colors.success}
+        {/* Contribution Slider (shown if Yes selected) */}
+        {contributes === true && (
+          <View style={styles.sliderSection}>
+            <Text style={styles.sliderLabel}>How much per paycheck?</Text>
+            
+            <View style={styles.displayContainer}>
+              <Text style={styles.displayValue}>{percentage}%</Text>
+              <Text style={styles.displayHint}>of your gross pay</Text>
+            </View>
+
+            <View style={styles.sliderContainer}>
+              <Text style={styles.sliderMin}>0%</Text>
+              <Slider
+                style={styles.slider}
+                minimumValue={0}
+                maximumValue={15}
+                step={1}
+                value={percentage}
+                onValueChange={(val) => setPercentage(Math.round(val))}
+                minimumTrackTintColor={Colors.success}
+                maximumTrackTintColor={Colors.cardBorder}
+                thumbTintColor={Colors.success}
+              />
+              <Text style={styles.sliderMax}>15%</Text>
+            </View>
+
+            <View style={styles.estimateCard}>
+              <Ionicons name="calculator-outline" size={scale(20)} color={Colors.success} />
+              <Text style={styles.estimateText}>
+                ~${estimatedMonthly().toLocaleString()}/month pre-tax
+              </Text>
+            </View>
+
+            {/* Change Selection */}
+            <TouchableOpacity
+              style={styles.changeButton}
+              onPress={() => setContributes(null)}
+            >
+              <Text style={styles.changeText}>Change selection</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Spacer */}
+        <View style={styles.spacer} />
+
+        {/* CTA (only when Yes is selected) */}
+        {contributes === true && (
+          <View style={[styles.ctaSection, { paddingBottom: insets.bottom + Spacing.md }]}>
+            <PrimaryButton
+              title="Continue"
+              onPress={handleContinue}
             />
-            <Text style={styles.sliderMax}>15%</Text>
           </View>
-
-          <View style={styles.estimateCard}>
-            <Ionicons name="calculator-outline" size={scale(20)} color={Colors.success} />
-            <Text style={styles.estimateText}>
-              ~${estimatedMonthly().toLocaleString()}/month pre-tax
-            </Text>
-          </View>
-
-          {/* Change Selection */}
-          <TouchableOpacity
-            style={styles.changeButton}
-            onPress={() => setContributes(null)}
-          >
-            <Text style={styles.changeText}>Change selection</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Spacer */}
-      <View style={styles.spacer} />
-
-      {/* CTA (only when Yes is selected) */}
-      {contributes === true && (
-        <View style={[styles.ctaSection, { paddingBottom: insets.bottom + Spacing.md }]}>
-          <PrimaryButton
-            title="Continue"
-            onPress={handleContinue}
-          />
-        </View>
-      )}
+        )}
+      </View>
     </View>
   );
 }
@@ -173,6 +175,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? { alignItems: 'center' as const } : {}),
+  },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   titleSection: {
     alignItems: 'center',

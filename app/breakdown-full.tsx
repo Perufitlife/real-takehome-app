@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { usePayInput } from '../src/context/PayInputContext';
 import { hasFullBreakdown } from '../src/lib/subscriptions';
-import { Colors, Spacing } from '../src/constants/theme';
+import { Colors, Spacing, isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 
 export default function BreakdownFullScreen() {
   const router = useRouter();
@@ -184,6 +184,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 24,
     paddingTop: 60,
+    ...(isTablet ? { alignItems: 'center' as const } : {}),
+  },
+  contentWrapper: {
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   closeButton: {
     alignSelf: 'flex-end',

@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { usePayInput } from '../src/context/PayInputContext';
 import { trackEvent } from '../src/lib/analytics';
 import { Card, PrimaryButton, BlurredCard } from '../src/components';
-import { Colors, Spacing, BorderRadius, formatCurrency, scale, moderateScale } from '../src/constants/theme';
+import { Colors, Spacing, BorderRadius, formatCurrency, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 import { calculateOvertimePay } from '../src/lib/payCalculator';
 
 export default function OvertimePreviewScreen() {
@@ -130,6 +130,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? { alignItems: 'center' as const } : {}),
+  },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   header: {
     alignItems: 'center',

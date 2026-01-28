@@ -7,7 +7,7 @@ import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { usePayInput } from '../../src/context/PayInputContext';
 import { trackEvent } from '../../src/lib/analytics';
-import { Colors, Spacing, BorderRadius, formatCurrency, formatHourly, getStateName, scale, moderateScale } from '../../src/constants/theme';
+import { Colors, Spacing, BorderRadius, formatCurrency, formatHourly, getStateName, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH } from '../../src/constants/theme';
 
 const isExpoGo = Constants.appOwnership === 'expo';
 
@@ -60,73 +60,76 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.lg }]}>
-      {/* Dev Mode Badge */}
-      {isExpoGo && (
-        <View style={styles.devBadge}>
-          <Text style={styles.devBadgeText}>DEV MODE</Text>
-        </View>
-      )}
-
-      {/* Hero Section */}
-      <View style={styles.heroSection}>
-        <Text style={styles.heroLabel}>YOUR TAKE-HOME</Text>
-        <Text style={styles.heroAmount}>{formatCurrency(monthly)}</Text>
-        <Text style={styles.heroPeriod}>per month</Text>
-      </View>
-
-      {/* Quick Actions */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
-        <View style={styles.quickActionsRow}>
-          <QuickActionButton
-            icon="time-outline"
-            label="Overtime"
-            onPress={() => handleQuickAction('overtime')}
-          />
-          <QuickActionButton
-            icon="briefcase-outline"
-            label="Jobs"
-            onPress={() => handleQuickAction('jobs')}
-          />
-          <QuickActionButton
-            icon="map-outline"
-            label="States"
-            onPress={() => handleQuickAction('states')}
-          />
-        </View>
-      </View>
-
-      {/* Profile Card */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>YOUR PROFILE</Text>
-        <TouchableOpacity 
-          style={styles.profileCard}
-          onPress={handleEditProfile}
-          activeOpacity={0.7}
-        >
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileMain}>
-              {payInput.payType === 'hourly' 
-                ? `${formatHourly(payInput.hourlyRate || 0)} · ${payInput.hoursPerWeek}h/week`
-                : `${formatCurrency(payInput.annualSalary || 0)}/year`
-              }
-            </Text>
-            <Text style={styles.profileSecondary}>
-              {getStateName(payInput.state || '')} · {
-                payInput.filingStatus === 'single' ? 'Single' :
-                payInput.filingStatus === 'married' ? 'Married' : 'Head of Household'
-              }
-            </Text>
+      {/* Responsive content wrapper for iPad */}
+      <View style={styles.contentWrapper}>
+        {/* Dev Mode Badge */}
+        {isExpoGo && (
+          <View style={styles.devBadge}>
+            <Text style={styles.devBadgeText}>DEV MODE</Text>
           </View>
-          <View style={styles.editButton}>
-            <Text style={styles.editText}>Edit</Text>
-            <Ionicons name="chevron-forward" size={scale(18)} color={Colors.primary} />
-          </View>
-        </TouchableOpacity>
-      </View>
+        )}
 
-      {/* Spacer */}
-      <View style={styles.spacer} />
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <Text style={styles.heroLabel}>YOUR TAKE-HOME</Text>
+          <Text style={styles.heroAmount}>{formatCurrency(monthly)}</Text>
+          <Text style={styles.heroPeriod}>per month</Text>
+        </View>
+
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
+          <View style={styles.quickActionsRow}>
+            <QuickActionButton
+              icon="time-outline"
+              label="Overtime"
+              onPress={() => handleQuickAction('overtime')}
+            />
+            <QuickActionButton
+              icon="briefcase-outline"
+              label="Jobs"
+              onPress={() => handleQuickAction('jobs')}
+            />
+            <QuickActionButton
+              icon="map-outline"
+              label="States"
+              onPress={() => handleQuickAction('states')}
+            />
+          </View>
+        </View>
+
+        {/* Profile Card */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>YOUR PROFILE</Text>
+          <TouchableOpacity 
+            style={styles.profileCard}
+            onPress={handleEditProfile}
+            activeOpacity={0.7}
+          >
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileMain}>
+                {payInput.payType === 'hourly' 
+                  ? `${formatHourly(payInput.hourlyRate || 0)} · ${payInput.hoursPerWeek}h/week`
+                  : `${formatCurrency(payInput.annualSalary || 0)}/year`
+                }
+              </Text>
+              <Text style={styles.profileSecondary}>
+                {getStateName(payInput.state || '')} · {
+                  payInput.filingStatus === 'single' ? 'Single' :
+                  payInput.filingStatus === 'married' ? 'Married' : 'Head of Household'
+                }
+              </Text>
+            </View>
+            <View style={styles.editButton}>
+              <Text style={styles.editText}>Edit</Text>
+              <Ionicons name="chevron-forward" size={scale(18)} color={Colors.primary} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Spacer */}
+        <View style={styles.spacer} />
+      </View>
     </View>
   );
 }
@@ -158,6 +161,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+    alignItems: isTablet ? 'center' : 'stretch',
+  },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
     paddingHorizontal: Spacing.xxl,
   },
   errorContainer: {

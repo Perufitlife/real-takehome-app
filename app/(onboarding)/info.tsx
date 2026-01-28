@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { Asset } from 'expo-asset';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trackEvent } from '../../src/lib/analytics';
-import { Colors, Spacing, scale, moderateScale, wp, isSmallDevice } from '../../src/constants/theme';
+import { Colors, Spacing, scale, moderateScale, wp, isSmallDevice, isTablet, MAX_CONTENT_WIDTH } from '../../src/constants/theme';
 import { PrimaryButton } from '../../src/components';
 import { onboardingLogo } from '../../src/assets/onboardingLogo';
 
@@ -34,42 +34,44 @@ export default function InfoScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.lg }]}>
-      {/* Main Content - Centered */}
-      <View style={styles.content}>
-        {/* Logo */}
-        <Image
-          source={{ uri: logoUri }}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+      <View style={styles.contentWrapper}>
+        {/* Main Content - Centered */}
+        <View style={styles.content}>
+          {/* Logo */}
+          <Image
+            source={{ uri: logoUri }}
+            style={styles.logo}
+            resizeMode="contain"
+          />
 
-        {/* Headline */}
-        <Text style={styles.headline}>See your real paycheck</Text>
-        
-        {/* Subtext */}
-        <Text style={styles.subtext}>
-          Taxes & overtime change what{'\n'}you actually take home.
-        </Text>
+          {/* Headline */}
+          <Text style={styles.headline}>See your real paycheck</Text>
+          
+          {/* Subtext */}
+          <Text style={styles.subtext}>
+            Taxes & overtime change what{'\n'}you actually take home.
+          </Text>
 
-        {/* Feature List */}
-        <View style={styles.features}>
-          <FeatureItem text="Salary or hourly" />
-          <FeatureItem text="Overtime & extra hours" />
-          <FeatureItem text="Accurate for 2026" />
+          {/* Feature List */}
+          <View style={styles.features}>
+            <FeatureItem text="Salary or hourly" />
+            <FeatureItem text="Overtime & extra hours" />
+            <FeatureItem text="Accurate for 2026" />
+          </View>
+
+          {/* Micro Trust */}
+          <Text style={styles.microTrust}>
+            Takes 30 seconds · No login
+          </Text>
         </View>
 
-        {/* Micro Trust */}
-        <Text style={styles.microTrust}>
-          Takes 30 seconds · No login
-        </Text>
-      </View>
-
-      {/* CTA - Fixed at Bottom */}
-      <View style={[styles.ctaContainer, { paddingBottom: insets.bottom + Spacing.md }]}>
-        <PrimaryButton
-          title="See my paycheck →"
-          onPress={() => router.push('/(onboarding)/pay-type')}
-        />
+        {/* CTA - Fixed at Bottom */}
+        <View style={[styles.ctaContainer, { paddingBottom: insets.bottom + Spacing.md }]}>
+          <PrimaryButton
+            title="See my paycheck →"
+            onPress={() => router.push('/(onboarding)/pay-type')}
+          />
+        </View>
       </View>
     </View>
   );
@@ -91,6 +93,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? {
+      alignItems: 'center' as const,
+    } : {}),
+  },
+  // All content constrained for tablet
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   placeholder: {
     justifyContent: 'center',
@@ -100,6 +111,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   logo: {
     width: LOGO_WIDTH,

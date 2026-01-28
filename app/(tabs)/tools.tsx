@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { trackEvent } from '../../src/lib/analytics';
 import { useComparisons } from '../../src/context/ComparisonsContext';
-import { Colors, Spacing, BorderRadius, scale, moderateScale } from '../../src/constants/theme';
+import { Colors, Spacing, BorderRadius, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH } from '../../src/constants/theme';
 
 export default function ToolsScreen() {
   const router = useRouter();
@@ -142,6 +142,11 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   title: {
     fontSize: moderateScale(28),

@@ -1,8 +1,9 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 
 export default function PaySummaryScreen() {
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <Text style={styles.title}>Take-Home Pay</Text>
       <Text style={styles.subtitle}>What you actually get paid</Text>
 
@@ -33,8 +34,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  scrollContent: {
     padding: 24,
     paddingTop: 60,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   title: {
     fontSize: 32,

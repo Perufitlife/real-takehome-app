@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useComparisons, SavedJobComparison, SavedStateComparison } from '../src/context/ComparisonsContext';
 import { ToolHeader } from '../src/components';
-import { Colors, Spacing, BorderRadius, formatCurrency, formatHourly, scale, moderateScale } from '../src/constants/theme';
+import { Colors, Spacing, BorderRadius, formatCurrency, formatHourly, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 import { getStateName } from '../src/lib/payCalculator';
 
 export default function SavedComparisonsScreen() {
@@ -252,6 +252,11 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.xxl,
     paddingBottom: Spacing.huge,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   section: {
     marginBottom: Spacing.xxl,

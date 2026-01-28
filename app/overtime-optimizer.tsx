@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { usePayInput } from '../src/context/PayInputContext';
 import { trackEvent } from '../src/lib/analytics';
 import { ToolHeader } from '../src/components';
-import { Colors, Spacing, BorderRadius, formatCurrency, formatPercent, scale, moderateScale } from '../src/constants/theme';
+import { Colors, Spacing, BorderRadius, formatCurrency, formatPercent, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 import { calculateOvertimePay, OvertimeScenario } from '../src/lib/payCalculator';
 
 const OVERTIME_OPTIONS = [5, 10, 15, 20];
@@ -161,6 +161,11 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.xxl,
     paddingBottom: Spacing.huge,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   emptyState: {
     flex: 1,

@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { trackEvent } from '../../src/lib/analytics';
 import { usePayInput } from '../../src/context/PayInputContext';
-import { Colors, Spacing, BorderRadius, scale, moderateScale, isSmallDevice } from '../../src/constants/theme';
+import { Colors, Spacing, BorderRadius, scale, moderateScale, isSmallDevice, isTablet, MAX_CONTENT_WIDTH } from '../../src/constants/theme';
 import { OnboardingHeader } from '../../src/components';
 import { getAllStatesWithTax } from '../../src/lib/payCalculator';
 
@@ -95,127 +95,129 @@ export default function StateScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
-      {/* Header */}
-      <OnboardingHeader currentStep={4} totalSteps={TOTAL_STEPS} />
+      <View style={styles.contentWrapper}>
+        {/* Header */}
+        <OnboardingHeader currentStep={4} totalSteps={TOTAL_STEPS} />
 
-      {/* Title */}
-      <Text style={styles.title}>Where do you work?</Text>
+        {/* Title */}
+        <Text style={styles.title}>Where do you work?</Text>
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={scale(18)} color={Colors.textTertiary} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search states..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholderTextColor={Colors.textTertiary}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Ionicons name="close-circle" size={scale(18)} color={Colors.textTertiary} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {searchQuery ? (
-        /* Search Results */
-        <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
-          {filteredStates.map((state) => (
-            <StateRow
-              key={state.code}
-              name={state.name}
-              taxRate={state.taxRate * 100}
-              selected={selectedState === state.code}
-              onPress={() => handleSelect(state.code)}
-            />
-          ))}
-          {filteredStates.length === 0 && (
-            <Text style={styles.noResults}>No states found</Text>
-          )}
-        </ScrollView>
-      ) : (
-        <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
-          {/* No Tax States - Horizontal Chips */}
-          <Text style={styles.sectionLabel}>NO STATE TAX</Text>
-          <FlatList
-            horizontal
-            data={NO_TAX_CHIPS}
-            keyExtractor={(item) => item.code}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipsContainer}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.chip,
-                  selectedState === item.code && styles.chipSelected,
-                ]}
-                onPress={() => handleSelect(item.code)}
-                activeOpacity={0.7}
-              >
-                <Text style={[
-                  styles.chipText,
-                  selectedState === item.code && styles.chipTextSelected,
-                ]}>
-                  {item.code}
-                </Text>
-              </TouchableOpacity>
-            )}
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={scale(18)} color={Colors.textTertiary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search states..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor={Colors.textTertiary}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
-
-          {/* Popular States */}
-          <Text style={styles.sectionLabel}>POPULAR</Text>
-          {POPULAR_STATES.map((state) => (
-            <StateRow
-              key={state.code}
-              name={state.name}
-              taxRate={state.taxRate}
-              selected={selectedState === state.code}
-              onPress={() => handleSelect(state.code)}
-            />
-          ))}
-
-          {/* Expand to see all */}
-          <TouchableOpacity
-            style={styles.expandButton}
-            onPress={() => setShowAllStates(!showAllStates)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.expandText}>
-              {showAllStates ? 'Show less' : 'See all 50 states'}
-            </Text>
-            <Ionicons
-              name={showAllStates ? 'chevron-up' : 'chevron-down'}
-              size={scale(18)}
-              color={Colors.textSecondary}
-            />
-          </TouchableOpacity>
-
-          {showAllStates && (
-            <View style={styles.allStatesSection}>
-              {allStates
-                .filter(s => !POPULAR_STATES.find(p => p.code === s.code))
-                .map((state) => (
-                  <StateRow
-                    key={state.code}
-                    name={state.name}
-                    taxRate={state.taxRate * 100}
-                    selected={selectedState === state.code}
-                    onPress={() => handleSelect(state.code)}
-                  />
-                ))}
-            </View>
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={scale(18)} color={Colors.textTertiary} />
+            </TouchableOpacity>
           )}
-        </ScrollView>
-      )}
+        </View>
 
-      {/* Not sure fallback - Always visible */}
-      <View style={[styles.fallbackContainer, { paddingBottom: insets.bottom + Spacing.sm }]}>
-        <TouchableOpacity style={styles.fallbackButton} onPress={handleUnknown} activeOpacity={0.7}>
-          <Text style={styles.fallbackText}>Not sure? Use Texas (no tax)</Text>
-        </TouchableOpacity>
+        {searchQuery ? (
+          /* Search Results */
+          <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
+            {filteredStates.map((state) => (
+              <StateRow
+                key={state.code}
+                name={state.name}
+                taxRate={state.taxRate * 100}
+                selected={selectedState === state.code}
+                onPress={() => handleSelect(state.code)}
+              />
+            ))}
+            {filteredStates.length === 0 && (
+              <Text style={styles.noResults}>No states found</Text>
+            )}
+          </ScrollView>
+        ) : (
+          <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
+            {/* No Tax States - Horizontal Chips */}
+            <Text style={styles.sectionLabel}>NO STATE TAX</Text>
+            <FlatList
+              horizontal
+              data={NO_TAX_CHIPS}
+              keyExtractor={(item) => item.code}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chipsContainer}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.chip,
+                    selectedState === item.code && styles.chipSelected,
+                  ]}
+                  onPress={() => handleSelect(item.code)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[
+                    styles.chipText,
+                    selectedState === item.code && styles.chipTextSelected,
+                  ]}>
+                    {item.code}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+
+            {/* Popular States */}
+            <Text style={styles.sectionLabel}>POPULAR</Text>
+            {POPULAR_STATES.map((state) => (
+              <StateRow
+                key={state.code}
+                name={state.name}
+                taxRate={state.taxRate}
+                selected={selectedState === state.code}
+                onPress={() => handleSelect(state.code)}
+              />
+            ))}
+
+            {/* Expand to see all */}
+            <TouchableOpacity
+              style={styles.expandButton}
+              onPress={() => setShowAllStates(!showAllStates)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.expandText}>
+                {showAllStates ? 'Show less' : 'See all 50 states'}
+              </Text>
+              <Ionicons
+                name={showAllStates ? 'chevron-up' : 'chevron-down'}
+                size={scale(18)}
+                color={Colors.textSecondary}
+              />
+            </TouchableOpacity>
+
+            {showAllStates && (
+              <View style={styles.allStatesSection}>
+                {allStates
+                  .filter(s => !POPULAR_STATES.find(p => p.code === s.code))
+                  .map((state) => (
+                    <StateRow
+                      key={state.code}
+                      name={state.name}
+                      taxRate={state.taxRate * 100}
+                      selected={selectedState === state.code}
+                      onPress={() => handleSelect(state.code)}
+                    />
+                  ))}
+              </View>
+            )}
+          </ScrollView>
+        )}
+
+        {/* Not sure fallback - Always visible */}
+        <View style={[styles.fallbackContainer, { paddingBottom: insets.bottom + Spacing.sm }]}>
+          <TouchableOpacity style={styles.fallbackButton} onPress={handleUnknown} activeOpacity={0.7}>
+            <Text style={styles.fallbackText}>Not sure? Use Texas (no tax)</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -259,6 +261,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? { alignItems: 'center' as const } : {}),
+  },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   title: {
     fontSize: moderateScale(22),

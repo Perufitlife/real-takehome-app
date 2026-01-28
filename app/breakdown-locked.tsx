@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Colors, Typography, Spacing } from '../src/constants/theme';
+import { Colors, Typography, Spacing, isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 
 export default function BreakdownLockedScreen() {
   const router = useRouter();
@@ -40,6 +40,11 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 60,
     justifyContent: 'center',
+    ...(isTablet ? { alignItems: 'center' as const } : {}),
+  },
+  contentWrapper: {
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   title: {
     fontSize: 32,

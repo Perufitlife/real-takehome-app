@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { usePayInput } from '../src/context/PayInputContext';
-import { hasFullBreakdown } from '../src/lib/subscriptions';
+import { hasFullBreakdown, waitForRevenueCatInit } from '../src/lib/subscriptions';
 import { Colors } from '../src/constants/theme';
 
 export default function Index() {
@@ -13,6 +13,12 @@ export default function Index() {
   useEffect(() => {
     const checkNavigation = async () => {
       try {
+        // Wait for both RevenueCat AND PayInputContext to be ready
+        const [rcReady] = await Promise.all([
+          waitForRevenueCatInit(3000),
+          payInput.waitForLoad(),
+        ]);
+        
         const isPremium = await hasFullBreakdown();
         const isProfileComplete = payInput.isComplete();
         
@@ -35,10 +41,10 @@ export default function Index() {
       }
     };
     
-    // Small delay to ensure context is ready
-    const timer = setTimeout(checkNavigation, 100);
+    // Small delay to ensure context provider is mounted
+    const timer = setTimeout(checkNavigation, 50);
     return () => clearTimeout(timer);
-  }, []);
+  }, [payInput.isLoaded]);
 
   // Show loading while checking
   return (

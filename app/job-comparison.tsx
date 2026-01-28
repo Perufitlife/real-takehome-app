@@ -7,7 +7,7 @@ import { useComparisons } from '../src/context/ComparisonsContext';
 import { trackEvent } from '../src/lib/analytics';
 import { incrementComparisonsSaved, maybeRequestReview } from '../src/lib/reviewService';
 import { ToolHeader, PrimaryButton } from '../src/components';
-import { Colors, Spacing, BorderRadius, formatCurrency, formatHourly, scale, moderateScale } from '../src/constants/theme';
+import { Colors, Spacing, BorderRadius, formatCurrency, formatHourly, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH } from '../src/constants/theme';
 import { compareJobs, JobOffer, JobComparisonResult, getStateName } from '../src/lib/payCalculator';
 
 export default function JobComparisonScreen() {
@@ -355,6 +355,11 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.xxl,
     paddingBottom: Spacing.huge,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   emptyState: {
     flex: 1,

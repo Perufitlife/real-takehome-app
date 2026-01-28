@@ -8,9 +8,9 @@ import * as Haptics from 'expo-haptics';
 import { usePayInput } from '../../src/context/PayInputContext';
 import { useComparisons } from '../../src/context/ComparisonsContext';
 import { trackEvent } from '../../src/lib/analytics';
-import { hasFullBreakdown, restorePurchases, clearPremiumStatus } from '../../src/lib/subscriptions';
+import { hasFullBreakdown, restorePurchases, clearPremiumStatus, setDevForceFree } from '../../src/lib/subscriptions';
 import { Card, Button } from '../../src/components';
-import { Colors, Typography, Spacing, BorderRadius, formatHourly, formatCurrency, getStateName, scale, moderateScale } from '../../src/constants/theme';
+import { Colors, Typography, Spacing, BorderRadius, formatHourly, formatCurrency, getStateName, scale, moderateScale, isTablet, MAX_CONTENT_WIDTH } from '../../src/constants/theme';
 
 const isExpoGo = Constants.appOwnership === 'expo';
 
@@ -68,7 +68,8 @@ export default function SettingsScreen() {
             // Clear all user data
             payInput.resetInputs();
             comparisons.clearAllComparisons();
-            await clearPremiumStatus(); // Also clear premium status for testing
+            await clearPremiumStatus(); // Clear Expo Go premium status
+            await setDevForceFree(true); // Force non-premium for testing purchase flow
             trackEvent('data_reset_full');
             router.replace('/(onboarding)/info');
           },
@@ -196,6 +197,11 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? {
+      maxWidth: MAX_CONTENT_WIDTH,
+      alignSelf: 'center' as const,
+      width: '100%',
+    } : {}),
   },
   title: {
     fontSize: moderateScale(28),

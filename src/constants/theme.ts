@@ -1,7 +1,7 @@
 // Design System - WorkROI
-// Optimized for clarity and usability
+// Optimized for clarity and usability on iPhone AND iPad
 
-import { Dimensions } from 'react-native';
+import { Dimensions, Platform, PixelRatio } from 'react-native';
 
 // =============================================================================
 // RESPONSIVE UTILITIES
@@ -13,21 +13,45 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BASE_WIDTH = 393;
 const BASE_HEIGHT = 852;
 
+// iPad detection - more reliable than just checking dimensions
+const MIN_TABLET_WIDTH = 600; // iPads start at 768 portrait, but 600+ is safe threshold
+export const isTablet = SCREEN_WIDTH >= MIN_TABLET_WIDTH || 
+  (Platform.OS === 'ios' && Platform.isPad);
+
+// Maximum content width for tablets (keeps UI readable and not stretched)
+export const MAX_CONTENT_WIDTH = 500; // iPhone-like max width on tablet
+export const TABLET_HORIZONTAL_PADDING = Math.max(40, (SCREEN_WIDTH - MAX_CONTENT_WIDTH) / 2);
+
 // Width percentage (0-100)
 export const wp = (percentage: number): number => (percentage * SCREEN_WIDTH) / 100;
 
 // Height percentage (0-100)
 export const hp = (percentage: number): number => (percentage * SCREEN_HEIGHT) / 100;
 
-// Horizontal scale (based on width)
-export const scale = (size: number): number => (SCREEN_WIDTH / BASE_WIDTH) * size;
+// Effective width for content (clamped for tablets)
+const EFFECTIVE_WIDTH = isTablet ? Math.min(SCREEN_WIDTH, MAX_CONTENT_WIDTH) : SCREEN_WIDTH;
+
+// Horizontal scale (based on width) - CLAMPED for tablets
+export const scale = (size: number): number => {
+  const scaleFactor = EFFECTIVE_WIDTH / BASE_WIDTH;
+  // On tablets, limit scaling to max 1.3x to prevent giant UI
+  const maxFactor = isTablet ? 1.3 : 2;
+  return Math.min(scaleFactor, maxFactor) * size;
+};
 
 // Vertical scale (based on height)
 export const verticalScale = (size: number): number => (SCREEN_HEIGHT / BASE_HEIGHT) * size;
 
 // Moderate scale - for fonts (less aggressive scaling)
-export const moderateScale = (size: number, factor = 0.5): number => 
-  size + (scale(size) - size) * factor;
+// On tablets, use even more conservative scaling
+export const moderateScale = (size: number, factor = 0.5): number => {
+  const tabletFactor = isTablet ? Math.min(factor, 0.3) : factor;
+  return size + (scale(size) - size) * tabletFactor;
+};
+
+// Responsive value helper - returns different values for phone vs tablet
+export const responsive = <T>(phoneValue: T, tabletValue: T): T => 
+  isTablet ? tabletValue : phoneValue;
 
 // Device size detection
 export const isSmallDevice = SCREEN_HEIGHT < 700; // iPhone SE, iPhone 8
@@ -39,6 +63,17 @@ export const Screen = {
   height: SCREEN_HEIGHT,
   isSmall: isSmallDevice,
   isLarge: isLargeDevice,
+  isTablet,
+  maxContentWidth: MAX_CONTENT_WIDTH,
+  tabletPadding: TABLET_HORIZONTAL_PADDING,
+};
+
+// Responsive horizontal padding for screen containers
+export const getResponsivePadding = (): number => {
+  if (isTablet) {
+    return TABLET_HORIZONTAL_PADDING;
+  }
+  return 24; // Default Spacing.xxl
 };
 
 // =============================================================================

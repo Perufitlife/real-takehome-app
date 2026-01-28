@@ -6,6 +6,7 @@
 2. **Expo EAS Account** (free tier available)
 3. **PostHog Account** (for analytics)
 4. **RevenueCat Account** (for subscriptions)
+5. **Node 20** (see `.nvmrc`). Node 22+ breaks EAS build; use `fnm use 20` or `nvm use 20` before building.
 
 ## Step 1: Configure API Keys
 
@@ -111,8 +112,10 @@ eas build --platform ios --profile development
 
 ### Production Build (for TestFlight):
 ```bash
-eas build --platform ios --profile production
+npm run build:ios
+# or: eas build --platform ios --profile production
 ```
+*(Requires Node 20; `build:ios` checks and fails with clear instructions if using Node 22.)*
 
 This will:
 1. Upload your code to EAS servers

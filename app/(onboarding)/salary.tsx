@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trackEvent } from '../../src/lib/analytics';
 import { usePayInput } from '../../src/context/PayInputContext';
-import { Colors, Spacing, scale, moderateScale, isSmallDevice } from '../../src/constants/theme';
+import { Colors, Spacing, scale, moderateScale, isSmallDevice, isTablet, MAX_CONTENT_WIDTH } from '../../src/constants/theme';
 import { OnboardingHeader, NumericKeypad, PrimaryButton } from '../../src/components';
 
 const TOTAL_STEPS = 7;
@@ -69,42 +69,44 @@ export default function SalaryScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
-      {/* Header */}
-      <OnboardingHeader currentStep={2} totalSteps={TOTAL_STEPS} />
+      <View style={styles.contentWrapper}>
+        {/* Header */}
+        <OnboardingHeader currentStep={2} totalSteps={TOTAL_STEPS} />
 
-      {/* Title Section */}
-      <View style={styles.titleSection}>
-        <Text style={styles.title}>What's your yearly salary?</Text>
-        <Text style={styles.hint}>Before taxes</Text>
-      </View>
+        {/* Title Section */}
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>What's your yearly salary?</Text>
+          <Text style={styles.hint}>Before taxes</Text>
+        </View>
 
-      {/* Display */}
-      <View style={styles.displayContainer}>
-        <Text style={[styles.display, error && styles.displayError]}>
-          <Text style={styles.dollarSign}>$ </Text>
-          {formatNumber(amount)}
-        </Text>
-        <View style={styles.underline} />
-        {error && <Text style={styles.errorText}>{error}</Text>}
-      </View>
+        {/* Display */}
+        <View style={styles.displayContainer}>
+          <Text style={[styles.display, error && styles.displayError]}>
+            <Text style={styles.dollarSign}>$ </Text>
+            {formatNumber(amount)}
+          </Text>
+          <View style={styles.underline} />
+          {error && <Text style={styles.errorText}>{error}</Text>}
+        </View>
 
-      {/* Spacer */}
-      <View style={styles.spacer} />
+        {/* Spacer */}
+        <View style={styles.spacer} />
 
-      {/* Keypad */}
-      <NumericKeypad
-        onPress={handleNumber}
-        onBackspace={handleBackspace}
-      />
-
-      {/* Bottom Section */}
-      <View style={[styles.bottomSection, { paddingBottom: insets.bottom + Spacing.md }]}>
-        <Text style={styles.rangeHint}>Most salaries: $30k–$120k</Text>
-        <PrimaryButton
-          title="Continue"
-          onPress={handleContinue}
-          disabled={!isValid}
+        {/* Keypad */}
+        <NumericKeypad
+          onPress={handleNumber}
+          onBackspace={handleBackspace}
         />
+
+        {/* Bottom Section */}
+        <View style={[styles.bottomSection, { paddingBottom: insets.bottom + Spacing.md }]}>
+          <Text style={styles.rangeHint}>Most salaries: $30k–$120k</Text>
+          <PrimaryButton
+            title="Continue"
+            onPress={handleContinue}
+            disabled={!isValid}
+          />
+        </View>
       </View>
     </View>
   );
@@ -115,6 +117,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.xxl,
+    ...(isTablet ? {
+      alignItems: 'center' as const,
+    } : {}),
+  },
+  contentWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: isTablet ? MAX_CONTENT_WIDTH : undefined,
   },
   titleSection: {
     alignItems: 'center',
