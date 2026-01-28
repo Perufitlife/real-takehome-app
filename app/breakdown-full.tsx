@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { usePayInput } from '../src/context/PayInputContext';
 import { hasFullBreakdown } from '../src/lib/subscriptions';
+import { Colors, Spacing } from '../src/constants/theme';
 
 export default function BreakdownFullScreen() {
   const router = useRouter();
@@ -51,6 +53,14 @@ export default function BreakdownFullScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Close Button */}
+      <TouchableOpacity 
+        style={styles.closeButton} 
+        onPress={() => router.push('/(tabs)')}
+      >
+        <Ionicons name="close" size={28} color={Colors.textPrimary} />
+      </TouchableOpacity>
+
       <Text style={styles.title}>Full breakdown</Text>
       <Text style={styles.subtitle}>Your complete pay analysis</Text>
 
@@ -174,6 +184,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 24,
     paddingTop: 60,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    marginBottom: Spacing.lg,
   },
   centered: {
     justifyContent: 'center',

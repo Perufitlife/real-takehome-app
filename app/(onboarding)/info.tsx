@@ -1,52 +1,87 @@
-import { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Asset } from 'expo-asset';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trackEvent } from '../../src/lib/analytics';
+import { Colors, Spacing, scale, moderateScale, wp, isSmallDevice } from '../../src/constants/theme';
+import { PrimaryButton } from '../../src/components';
+import { onboardingLogo } from '../../src/assets/onboardingLogo';
+
+// Responsive logo sizing
+const LOGO_WIDTH = Math.min(wp(65), 280);
+const LOGO_HEIGHT = Math.round(LOGO_WIDTH * 0.52);
 
 export default function InfoScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [logoUri, setLogoUri] = useState<string | null>(null);
 
   useEffect(() => {
-    trackEvent('onboarding_step_viewed', {
-      step: 'info',
-      path: '/(onboarding)/info'
-    });
+    trackEvent('onboarding_step_viewed', { step: 'info' });
+    Asset.loadAsync(onboardingLogo).then(([a]) => {
+      setLogoUri(a?.localUri ?? null);
+    }).catch(() => setLogoUri(null));
   }, []);
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Your pay info</Text>
-      <Text style={styles.subtitle}>
-        Just a few basics to calculate your take-home pay:
-      </Text>
+  if (!logoUri) {
+    return (
+      <View style={[styles.container, styles.placeholder, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
 
-      <View style={styles.list}>
-        <View style={styles.listItem}>
-          <Text style={styles.icon}>💼</Text>
-          <Text style={styles.listText}>Salary or hourly rate</Text>
+  return (
+    <View style={[styles.container, { paddingTop: insets.top + Spacing.lg }]}>
+      {/* Main Content - Centered */}
+      <View style={styles.content}>
+        {/* Logo */}
+        <Image
+          source={{ uri: logoUri }}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
+        {/* Headline */}
+        <Text style={styles.headline}>See your real paycheck</Text>
+        
+        {/* Subtext */}
+        <Text style={styles.subtext}>
+          Taxes & overtime change what{'\n'}you actually take home.
+        </Text>
+
+        {/* Feature List */}
+        <View style={styles.features}>
+          <FeatureItem text="Salary or hourly" />
+          <FeatureItem text="Overtime & extra hours" />
+          <FeatureItem text="Accurate for 2026" />
         </View>
-        <View style={styles.listItem}>
-          <Text style={styles.icon}>⏰</Text>
-          <Text style={styles.listText}>Hours per week</Text>
-        </View>
-        <View style={styles.listItem}>
-          <Text style={styles.icon}>📍</Text>
-          <Text style={styles.listText}>State</Text>
-        </View>
-        <View style={styles.listItem}>
-          <Text style={styles.icon}>👤</Text>
-          <Text style={styles.listText}>Filing status (optional)</Text>
-        </View>
+
+        {/* Micro Trust */}
+        <Text style={styles.microTrust}>
+          Takes 30 seconds · No login
+        </Text>
       </View>
 
-      <Text style={styles.footnote}>No income history required</Text>
+      {/* CTA - Fixed at Bottom */}
+      <View style={[styles.ctaContainer, { paddingBottom: insets.bottom + Spacing.md }]}>
+        <PrimaryButton
+          title="See my paycheck →"
+          onPress={() => router.push('/(onboarding)/pay-type')}
+        />
+      </View>
+    </View>
+  );
+}
 
-      <TouchableOpacity 
-        style={styles.button}
-        onPress={() => router.push('/(onboarding)/pay-type')}
-      >
-        <Text style={styles.buttonText}>Continue</Text>
-      </TouchableOpacity>
+function FeatureItem({ text }: { text: string }) {
+  return (
+    <View style={styles.featureItem}>
+      <View style={styles.checkCircle}>
+        <Text style={styles.checkIcon}>✓</Text>
+      </View>
+      <Text style={styles.featureText}>{text}</Text>
     </View>
   );
 }
@@ -54,55 +89,72 @@ export default function InfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.background,
+    paddingHorizontal: Spacing.xxl,
   },
-  title: {
-    fontSize: 32,
+  placeholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logo: {
+    width: LOGO_WIDTH,
+    height: LOGO_HEIGHT,
+    marginBottom: isSmallDevice ? Spacing.xl : Spacing.xxxl,
+  },
+  headline: {
+    fontSize: moderateScale(24),
     fontWeight: '700',
-    marginBottom: 16,
-    color: '#000000',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
   },
-  subtitle: {
-    fontSize: 18,
-    color: '#666666',
-    marginBottom: 32,
-    lineHeight: 26,
+  subtext: {
+    fontSize: moderateScale(16),
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: scale(24),
+    marginBottom: isSmallDevice ? Spacing.xl : Spacing.xxxl,
   },
-  list: {
-    marginBottom: 40,
+  features: {
+    alignSelf: 'stretch',
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.xxl,
   },
-  listItem: {
+  featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Spacing.md,
   },
-  icon: {
-    fontSize: 24,
-    marginRight: 16,
-    width: 32,
-  },
-  listText: {
-    fontSize: 17,
-    color: '#000000',
-  },
-  footnote: {
-    fontSize: 15,
-    color: '#999999',
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  button: {
-    backgroundColor: '#000000',
-    borderRadius: 12,
-    paddingVertical: 16,
+  checkCircle: {
+    width: scale(24),
+    height: scale(24),
+    borderRadius: scale(12),
+    backgroundColor: Colors.success + '15',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 'auto',
+    marginRight: Spacing.md,
   },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '600',
+  checkIcon: {
+    fontSize: scale(14),
+    fontWeight: '700',
+    color: Colors.success,
+  },
+  featureText: {
+    fontSize: moderateScale(16),
+    color: Colors.textPrimary,
+    fontWeight: '500',
+  },
+  microTrust: {
+    fontSize: moderateScale(14),
+    color: Colors.textTertiary,
+    textAlign: 'center',
+  },
+  ctaContainer: {
+    paddingTop: Spacing.lg,
   },
 });

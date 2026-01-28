@@ -1,23 +1,35 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { trackEvent } from '../../src/lib/analytics';
 import { usePayInput } from '../../src/context/PayInputContext';
+import { Colors, Spacing, scale, moderateScale, isSmallDevice } from '../../src/constants/theme';
+import { OnboardingHeader, NumericKeypad, PrimaryButton } from '../../src/components';
+
+const TOTAL_STEPS = 7;
+const MIN_HOURS = 10;
+const MAX_HOURS = 80;
+
+// Quick select presets
+const PRESETS = [20, 30, 40, 45, 50];
 
 export default function HoursScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { setHoursPerWeek } = usePayInput();
   const [hours, setHours] = useState('40');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    trackEvent('onboarding_step_viewed', {
-      step: 'hours',
-      path: '/(onboarding)/hours'
-    });
+    trackEvent('onboarding_hours_viewed');
   }, []);
 
   const handleNumber = (num: string) => {
-    if (hours === '0') {
+    if (error) setError(null);
+    
+    if (hours === '0' || hours === '40') {
       setHours(num);
     } else if (hours.length < 3) {
       setHours(hours + num);
@@ -25,6 +37,8 @@ export default function HoursScreen() {
   };
 
   const handleBackspace = () => {
+    if (error) setError(null);
+    
     if (hours.length > 1) {
       setHours(hours.slice(0, -1));
     } else {
@@ -32,58 +46,108 @@ export default function HoursScreen() {
     }
   };
 
+  const handlePreset = (value: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (error) setError(null);
+    setHours(String(value));
+  };
+
   const handleContinue = () => {
-    setHoursPerWeek(parseInt(hours));
+    const numericHours = Number(hours);
+    
+    if (numericHours < MIN_HOURS) {
+      setError('That seems too low for weekly work.');
+      return;
+    }
+    if (numericHours > MAX_HOURS) {
+      setError('That seems unusually high.');
+      return;
+    }
+
+    const isOvertime = numericHours > 40;
+    setHoursPerWeek(numericHours);
+    
+    trackEvent('onboarding_hours_entered', {
+      hoursPerWeek: numericHours,
+      overtime: isOvertime
+    });
+    
+    if (isOvertime) {
+      trackEvent('overtime_user', { hoursPerWeek: numericHours });
+    }
+    
     router.push('/(onboarding)/state');
   };
 
+  const numericHours = Number(hours || '40');
+  const isOvertime = numericHours > 40;
+  const isValid = numericHours >= MIN_HOURS && numericHours <= MAX_HOURS;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>How many hours do you work per week?</Text>
-      
-      <View style={styles.inputContainer}>
-        <Text style={styles.input}>{hours} <Text style={styles.unit}>hours/week</Text></Text>
-        <Text style={styles.hint}>Most full-time jobs use 40h/week</Text>
+    <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
+      {/* Header */}
+      <OnboardingHeader currentStep={3} totalSteps={TOTAL_STEPS} />
+
+      {/* Title Section */}
+      <View style={styles.titleSection}>
+        <Text style={styles.title}>How many hours per week?</Text>
       </View>
 
-      <Text style={styles.label}>Weekly schedule</Text>
+      {/* Display */}
+      <View style={styles.displayContainer}>
+        <Text style={[styles.display, error && styles.displayError]}>
+          {hours || '40'}
+          <Text style={styles.unit}> hrs</Text>
+        </Text>
+        <View style={[styles.underline, isOvertime && styles.underlineOvertime]} />
+        
+        {/* Dynamic hint */}
+        <Text style={[styles.hint, isOvertime && styles.hintOvertime]}>
+          {isOvertime ? 'Overtime starts after 40h' : 'Most full-time = 40h'}
+        </Text>
+        
+        {error && <Text style={styles.errorText}>{error}</Text>}
+      </View>
 
-      <View style={styles.keypad}>
-        {[['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9']].map((row, i) => (
-          <View key={i} style={styles.keypadRow}>
-            {row.map((num) => (
-              <TouchableOpacity
-                key={num}
-                style={styles.key}
-                onPress={() => handleNumber(num)}
-              >
-                <Text style={styles.keyText}>{num}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+      {/* Quick Select Presets */}
+      <View style={styles.presetsContainer}>
+        {PRESETS.map((preset) => (
+          <TouchableOpacity
+            key={preset}
+            style={[
+              styles.presetButton,
+              Number(hours) === preset && styles.presetButtonActive,
+            ]}
+            onPress={() => handlePreset(preset)}
+            activeOpacity={0.7}
+          >
+            <Text style={[
+              styles.presetText,
+              Number(hours) === preset && styles.presetTextActive,
+            ]}>
+              {preset}h
+            </Text>
+          </TouchableOpacity>
         ))}
-        <View style={styles.keypadRow}>
-          <View style={styles.key} />
-          <TouchableOpacity
-            style={styles.key}
-            onPress={() => handleNumber('0')}
-          >
-            <Text style={styles.keyText}>0</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.key, styles.backspaceKey]}
-            onPress={handleBackspace}
-          >
-            <Text style={styles.keyText}>⌫</Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
-      {parseInt(hours) > 0 && (
-        <TouchableOpacity style={styles.button} onPress={handleContinue}>
-          <Text style={styles.buttonText}>Continue</Text>
-        </TouchableOpacity>
-      )}
+      {/* Spacer */}
+      <View style={styles.spacer} />
+
+      {/* Keypad */}
+      <NumericKeypad
+        onPress={handleNumber}
+        onBackspace={handleBackspace}
+      />
+
+      {/* Bottom Section */}
+      <View style={[styles.bottomSection, { paddingBottom: insets.bottom + Spacing.md }]}>
+        <PrimaryButton
+          title="Continue"
+          onPress={handleContinue}
+          disabled={!isValid}
+        />
+      </View>
     </View>
   );
 }
@@ -91,75 +155,92 @@ export default function HoursScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.background,
+    paddingHorizontal: Spacing.xxl,
+  },
+  titleSection: {
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
   },
   title: {
-    fontSize: 28,
+    fontSize: moderateScale(22),
     fontWeight: '700',
-    marginBottom: 40,
-    color: '#000000',
+    color: Colors.textPrimary,
+    textAlign: 'center',
   },
-  inputContainer: {
+  displayContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Spacing.lg,
   },
-  input: {
-    fontSize: 48,
+  display: {
+    fontSize: scale(42),
     fontWeight: '700',
-    color: '#000000',
-    marginBottom: 8,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
+  },
+  displayError: {
+    color: Colors.warning,
   },
   unit: {
-    fontSize: 24,
-    color: '#999999',
+    fontSize: scale(26),
+    color: Colors.textSecondary,
+  },
+  underline: {
+    width: scale(100),
+    height: 3,
+    backgroundColor: Colors.primary,
+    borderRadius: 2,
+    marginBottom: Spacing.sm,
+  },
+  underlineOvertime: {
+    backgroundColor: Colors.success,
   },
   hint: {
-    fontSize: 15,
-    color: '#999999',
+    fontSize: moderateScale(14),
+    color: Colors.textTertiary,
   },
-  label: {
-    fontSize: 15,
-    color: '#999999',
+  hintOvertime: {
+    color: Colors.success,
+    fontWeight: '500',
+  },
+  errorText: {
+    fontSize: moderateScale(13),
+    color: Colors.warning,
+    marginTop: Spacing.sm,
     textAlign: 'center',
-    marginBottom: 40,
   },
-  keypad: {
-    marginTop: 'auto',
-    marginBottom: 20,
-  },
-  keypadRow: {
+  presetsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 12,
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
-  key: {
-    width: 80,
-    height: 60,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 8,
+  presetButton: {
+    paddingHorizontal: scale(16),
+    paddingVertical: scale(10),
+    backgroundColor: Colors.cardBackground,
+    borderRadius: scale(20),
+    borderWidth: 1.5,
+    borderColor: Colors.cardBorder,
   },
-  backspaceKey: {
-    backgroundColor: '#E5E5E5',
+  presetButtonActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
-  keyText: {
-    fontSize: 24,
+  presetText: {
+    fontSize: moderateScale(14),
     fontWeight: '600',
-    color: '#000000',
+    color: Colors.textSecondary,
   },
-  button: {
-    backgroundColor: '#000000',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
+  presetTextActive: {
+    color: Colors.textInverse,
   },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '600',
+  spacer: {
+    flex: 1,
+    minHeight: isSmallDevice ? Spacing.sm : Spacing.lg,
+  },
+  bottomSection: {
+    marginTop: Spacing.md,
   },
 });

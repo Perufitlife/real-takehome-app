@@ -9,6 +9,11 @@ const STORAGE_KEYS = {
   hoursPerWeek: 'hoursPerWeek',
   state: 'state',
   filingStatus: 'filingStatus',
+  // New fields for benefits and overtime
+  contribution401k: 'contribution401k',
+  contributionType: 'contributionType',
+  hasOvertime: 'hasOvertime',
+  overtimeMultiplier: 'overtimeMultiplier',
 } as const;
 
 interface PayInputContextType {
@@ -18,6 +23,11 @@ interface PayInputContextType {
   hoursPerWeek: number | null;
   state: string | null;
   filingStatus: 'single' | 'married' | 'head_of_household' | null;
+  // New fields
+  contribution401k: number | null;
+  contributionType: 'percent' | 'dollar' | null;
+  hasOvertime: boolean | null;
+  overtimeMultiplier: number;
 
   setPayType: (type: 'salary' | 'hourly') => void;
   setAnnualSalary: (amount: number) => void;
@@ -25,6 +35,11 @@ interface PayInputContextType {
   setHoursPerWeek: (hours: number) => void;
   setState: (state: string) => void;
   setFilingStatus: (status: 'single' | 'married' | 'head_of_household') => void;
+  // New setters
+  setContribution401k: (amount: number | null) => void;
+  setContributionType: (type: 'percent' | 'dollar' | null) => void;
+  setHasOvertime: (has: boolean | null) => void;
+  setOvertimeMultiplier: (multiplier: number) => void;
 
   calculatePay: () => PayResult | null;
   resetInputs: () => void;
@@ -44,17 +59,37 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
   const [hoursPerWeek, setHoursPerWeekState] = useState<number | null>(null);
   const [state, setStateState] = useState<string | null>(null);
   const [filingStatus, setFilingStatusState] = useState<'single' | 'married' | 'head_of_household' | null>(null);
+  // New state fields
+  const [contribution401k, setContribution401kState] = useState<number | null>(null);
+  const [contributionType, setContributionTypeState] = useState<'percent' | 'dollar' | null>(null);
+  const [hasOvertime, setHasOvertimeState] = useState<boolean | null>(null);
+  const [overtimeMultiplier, setOvertimeMultiplierState] = useState<number>(1.5);
 
   useEffect(() => {
     (async () => {
       try {
-        const [loadedPayType, loadedAnnualSalary, loadedHourlyRate, loadedHoursPerWeek, loadedState, loadedFilingStatus] = await Promise.all([
+        const [
+          loadedPayType, 
+          loadedAnnualSalary, 
+          loadedHourlyRate, 
+          loadedHoursPerWeek, 
+          loadedState, 
+          loadedFilingStatus,
+          loadedContribution401k,
+          loadedContributionType,
+          loadedHasOvertime,
+          loadedOvertimeMultiplier,
+        ] = await Promise.all([
           AsyncStorage.getItem(STORAGE_KEYS.payType),
           AsyncStorage.getItem(STORAGE_KEYS.annualSalary),
           AsyncStorage.getItem(STORAGE_KEYS.hourlyRate),
           AsyncStorage.getItem(STORAGE_KEYS.hoursPerWeek),
           AsyncStorage.getItem(STORAGE_KEYS.state),
           AsyncStorage.getItem(STORAGE_KEYS.filingStatus),
+          AsyncStorage.getItem(STORAGE_KEYS.contribution401k),
+          AsyncStorage.getItem(STORAGE_KEYS.contributionType),
+          AsyncStorage.getItem(STORAGE_KEYS.hasOvertime),
+          AsyncStorage.getItem(STORAGE_KEYS.overtimeMultiplier),
         ]);
         if (loadedPayType) setPayTypeState(loadedPayType as 'salary' | 'hourly');
         if (loadedAnnualSalary != null) setAnnualSalaryState(Number(loadedAnnualSalary));
@@ -62,6 +97,11 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
         if (loadedHoursPerWeek != null) setHoursPerWeekState(Number(loadedHoursPerWeek));
         if (loadedState) setStateState(loadedState);
         if (loadedFilingStatus) setFilingStatusState(loadedFilingStatus as 'single' | 'married' | 'head_of_household');
+        // New fields
+        if (loadedContribution401k != null) setContribution401kState(Number(loadedContribution401k));
+        if (loadedContributionType) setContributionTypeState(loadedContributionType as 'percent' | 'dollar');
+        if (loadedHasOvertime != null) setHasOvertimeState(loadedHasOvertime === 'true');
+        if (loadedOvertimeMultiplier != null) setOvertimeMultiplierState(Number(loadedOvertimeMultiplier));
       } catch (e) {
         console.warn('PayInputContext: load from storage failed', e);
       }
@@ -98,6 +138,39 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
     AsyncStorage.setItem(STORAGE_KEYS.filingStatus, status).catch(() => {});
   };
 
+  // New setters
+  const setContribution401k = (amount: number | null) => {
+    setContribution401kState(amount);
+    if (amount !== null) {
+      AsyncStorage.setItem(STORAGE_KEYS.contribution401k, String(amount)).catch(() => {});
+    } else {
+      AsyncStorage.removeItem(STORAGE_KEYS.contribution401k).catch(() => {});
+    }
+  };
+
+  const setContributionType = (type: 'percent' | 'dollar' | null) => {
+    setContributionTypeState(type);
+    if (type !== null) {
+      AsyncStorage.setItem(STORAGE_KEYS.contributionType, type).catch(() => {});
+    } else {
+      AsyncStorage.removeItem(STORAGE_KEYS.contributionType).catch(() => {});
+    }
+  };
+
+  const setHasOvertime = (has: boolean | null) => {
+    setHasOvertimeState(has);
+    if (has !== null) {
+      AsyncStorage.setItem(STORAGE_KEYS.hasOvertime, String(has)).catch(() => {});
+    } else {
+      AsyncStorage.removeItem(STORAGE_KEYS.hasOvertime).catch(() => {});
+    }
+  };
+
+  const setOvertimeMultiplier = (multiplier: number) => {
+    setOvertimeMultiplierState(multiplier);
+    AsyncStorage.setItem(STORAGE_KEYS.overtimeMultiplier, String(multiplier)).catch(() => {});
+  };
+
   const calculatePay = (): PayResult | null => {
     if (!payType || !hoursPerWeek || !state) return null;
     if (payType === 'hourly' && !hourlyRate) return null;
@@ -110,6 +183,10 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
         annualSalary: annualSalary || undefined,
         hourlyRate: hourlyRate || undefined,
         filingStatus: filingStatus || undefined,
+        contribution401k: contribution401k || undefined,
+        contributionType: contributionType || undefined,
+        hasOvertime: hasOvertime || undefined,
+        overtimeMultiplier: overtimeMultiplier,
       });
     } catch (error) {
       console.error('Error calculating pay:', error);
@@ -131,6 +208,11 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
     setHoursPerWeekState(null);
     setStateState(null);
     setFilingStatusState(null);
+    // Reset new fields
+    setContribution401kState(null);
+    setContributionTypeState(null);
+    setHasOvertimeState(null);
+    setOvertimeMultiplierState(1.5);
     AsyncStorage.multiRemove(Object.values(STORAGE_KEYS)).catch(() => {});
   };
 
@@ -141,12 +223,20 @@ export function PayInputProvider({ children }: PayInputProviderProps) {
     hoursPerWeek,
     state,
     filingStatus,
+    contribution401k,
+    contributionType,
+    hasOvertime,
+    overtimeMultiplier,
     setPayType,
     setAnnualSalary,
     setHourlyRate,
     setHoursPerWeek,
     setState,
     setFilingStatus,
+    setContribution401k,
+    setContributionType,
+    setHasOvertime,
+    setOvertimeMultiplier,
     calculatePay,
     resetInputs,
     isComplete,

@@ -1,6 +1,19 @@
 import Purchases, { CustomerInfo, PurchasesOfferings } from 'react-native-purchases';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 let isConfigured = false;
+
+// Detectar si estamos en Expo Go (desarrollo) vs build nativo (producción)
+const isExpoGo = Constants.appOwnership === 'expo';
+
+// Keys for AsyncStorage (Expo Go testing)
+const PREMIUM_KEY = 'premium_status';
+const PREMIUM_PLAN_KEY = 'premium_plan';
+
+if (isExpoGo) {
+  console.log('🟢 Running in Expo Go - Using local premium status');
+}
 
 export const initializeRevenueCat = async () => {
   const apiKey = process.env.REVENUECAT_API_KEY;
@@ -19,7 +32,37 @@ export const initializeRevenueCat = async () => {
   }
 };
 
+// Set premium status (for Expo Go testing)
+export const setPremiumStatus = async (isPremium: boolean, plan?: 'monthly' | 'annual'): Promise<void> => {
+  await AsyncStorage.setItem(PREMIUM_KEY, isPremium ? 'true' : 'false');
+  if (plan) {
+    await AsyncStorage.setItem(PREMIUM_PLAN_KEY, plan);
+  }
+};
+
+// Get premium status (for Expo Go testing)
+export const getPremiumStatus = async (): Promise<boolean> => {
+  const status = await AsyncStorage.getItem(PREMIUM_KEY);
+  return status === 'true';
+};
+
+// Get premium plan type
+export const getPremiumPlan = async (): Promise<string | null> => {
+  return await AsyncStorage.getItem(PREMIUM_PLAN_KEY);
+};
+
+// Clear premium status (for testing/reset)
+export const clearPremiumStatus = async (): Promise<void> => {
+  await AsyncStorage.multiRemove([PREMIUM_KEY, PREMIUM_PLAN_KEY]);
+};
+
 export const checkEntitlement = async (entitlementId: string): Promise<boolean> => {
+  // In Expo Go, check local storage
+  if (isExpoGo) {
+    const status = await AsyncStorage.getItem(PREMIUM_KEY);
+    return status === 'true';
+  }
+
   if (!isConfigured) {
     console.warn('RevenueCat not configured');
     return false;
@@ -35,6 +78,27 @@ export const checkEntitlement = async (entitlementId: string): Promise<boolean> 
 };
 
 export const getOfferings = async (): Promise<PurchasesOfferings | null> => {
+  // Bypass en Expo Go - retornar mock offerings
+  if (isExpoGo) {
+    console.log('🟢 Expo Go: Returning mock offerings');
+    return {
+      current: {
+        monthly: {
+          product: {
+            priceString: '$4.99',
+            price: 4.99,
+          },
+        },
+        annual: {
+          product: {
+            priceString: '$24.99',
+            price: 24.99,
+          },
+        },
+      },
+    } as any;
+  }
+
   if (!isConfigured) {
     console.warn('RevenueCat not configured');
     return null;
@@ -49,7 +113,17 @@ export const getOfferings = async (): Promise<PurchasesOfferings | null> => {
   }
 };
 
-export const purchasePackage = async (pkg: any): Promise<{ customerInfo: CustomerInfo }> => {
+export const purchasePackage = async (pkg: any, plan?: 'monthly' | 'annual'): Promise<{ customerInfo: CustomerInfo }> => {
+  // Bypass en Expo Go - simular compra exitosa y persistir
+  if (isExpoGo) {
+    console.log('🟢 Expo Go: Simulating successful purchase');
+    // Simular un pequeño delay para que se vea real
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Persistir el estado premium
+    await setPremiumStatus(true, plan);
+    return { customerInfo: {} as CustomerInfo };
+  }
+
   if (!isConfigured) {
     throw new Error('RevenueCat not configured');
   }
@@ -83,5 +157,11 @@ export const restorePurchases = async (): Promise<CustomerInfo | null> => {
 
 // Helper to check if user has the full breakdown entitlement
 export const hasFullBreakdown = async (): Promise<boolean> => {
+  // In Expo Go, check local storage
+  if (isExpoGo) {
+    const status = await AsyncStorage.getItem(PREMIUM_KEY);
+    return status === 'true';
+  }
+  
   return await checkEntitlement('full_breakdown');
 };

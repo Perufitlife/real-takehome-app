@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 60" width="180" height="60">
+  <rect width="180" height="60" rx="10" fill="#000"/>
+  <rect x="0.5" y="0.5" width="179" height="59" rx="9.5" fill="none" stroke="#A6A6A6" stroke-width="1"/>
+  
+  <!-- Play Store Triangle -->
+  <defs>
+    <linearGradient id="playGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00C4FF"/>
+      <stop offset="35%" style="stop-color:#00F076"/>
+      <stop offset="65%" style="stop-color:#FFBC00"/>
+      <stop offset="100%" style="stop-color:#FF3A44"/>
+    </linearGradient>
+  </defs>
+  <path d="M22 15 L22 45 L42 30 Z" fill="url(#playGrad)"/>
+  
+  <!-- Text -->
+  <text x="52" y="22" fill="white" font-family="Roboto, Arial, sans-serif" font-size="9" letter-spacing="0.5">GET IT ON</text>
+  <text x="52" y="42" fill="white" font-family="Roboto, Arial, sans-serif" font-size="16" font-weight="500">Google Play</text>
+</svg>

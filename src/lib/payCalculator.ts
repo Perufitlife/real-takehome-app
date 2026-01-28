@@ -8,6 +8,11 @@ export interface PayInput {
   hoursPerWeek: number;
   state: string; // 'TX', 'CA', etc.
   filingStatus?: 'single' | 'married' | 'head_of_household';
+  // New fields for benefits and overtime
+  contribution401k?: number;
+  contributionType?: 'percent' | 'dollar';
+  hasOvertime?: boolean;
+  overtimeMultiplier?: number;
 }
 
 export interface PayResult {
@@ -145,23 +150,51 @@ function calculateStateTax(grossAnnual: number, state: string): number {
 export function calculateTakeHomePay(input: PayInput): PayResult {
   // Calculate gross annual income
   let grossAnnual: number;
+  const overtimeMultiplier = input.overtimeMultiplier || 1.5;
   
   if (input.payType === 'hourly' && input.hourlyRate) {
-    grossAnnual = input.hourlyRate * input.hoursPerWeek * 52;
+    // Check if user works overtime and has enabled overtime calculation
+    if (input.hasOvertime && input.hoursPerWeek > 40) {
+      const regularHours = 40;
+      const overtimeHours = input.hoursPerWeek - 40;
+      const regularPay = input.hourlyRate * regularHours * 52;
+      const overtimePay = input.hourlyRate * overtimeMultiplier * overtimeHours * 52;
+      grossAnnual = regularPay + overtimePay;
+    } else {
+      grossAnnual = input.hourlyRate * input.hoursPerWeek * 52;
+    }
   } else if (input.payType === 'salary' && input.annualSalary) {
     grossAnnual = input.annualSalary;
   } else {
     throw new Error('Invalid pay input');
   }
   
-  // Calculate taxes
+  // Calculate 401k contribution (pre-tax deduction)
+  let contribution401kAnnual = 0;
+  if (input.contribution401k && input.contribution401k > 0) {
+    if (input.contributionType === 'percent') {
+      contribution401kAnnual = grossAnnual * (input.contribution401k / 100);
+    } else {
+      // Dollar amount per paycheck (assume biweekly = 26 paychecks)
+      contribution401kAnnual = input.contribution401k * 26;
+    }
+    // Cap at IRS limit ($23,000 for 2024)
+    contribution401kAnnual = Math.min(contribution401kAnnual, 23000);
+  }
+  
+  // Taxable income is gross minus 401k contribution
+  const taxableIncome = grossAnnual - contribution401kAnnual;
+  
+  // Calculate taxes on taxable income (after 401k)
   const filingStatus = input.filingStatus || 'single';
-  const federalTax = calculateFederalTax(grossAnnual, filingStatus);
-  const ficaTax = calculateFICA(grossAnnual);
-  const stateTax = calculateStateTax(grossAnnual, input.state);
+  const federalTax = calculateFederalTax(taxableIncome, filingStatus);
+  const ficaTax = calculateFICA(grossAnnual); // FICA is on gross, not reduced by 401k
+  const stateTax = calculateStateTax(taxableIncome, input.state); // Most states also exclude 401k
   
   const totalTax = federalTax + ficaTax + stateTax;
-  const netAnnual = grossAnnual - totalTax;
+  
+  // Net is gross minus taxes minus 401k contribution
+  const netAnnual = grossAnnual - totalTax - contribution401kAnnual;
   
   // Calculate different pay periods
   const grossBiweekly = grossAnnual / 26;
@@ -215,4 +248,313 @@ export function getHoursPerWeekBucket(hours: number): string {
   if (hours <= 39) return '21-39';
   if (hours === 40) return '40';
   return '>40';
+}
+
+// ===== NEW FEATURES =====
+
+// Overtime Pay Calculator
+export interface OvertimeScenario {
+  extraHours: number;
+  grossIncrease: number;
+  taxesIncrease: number;
+  netIncrease: number;
+  effectiveTaxRate: number;
+}
+
+export function calculateOvertimePay(
+  hourlyRate: number,
+  regularHours: number,
+  extraHours: number,
+  state: string,
+  filingStatus: 'single' | 'married' | 'head_of_household' = 'single'
+): OvertimeScenario {
+  // Base pay calculation
+  const baseAnnual = hourlyRate * regularHours * 52;
+  
+  // Overtime is 1.5x rate
+  const overtimeRate = hourlyRate * 1.5;
+  const overtimeAnnual = overtimeRate * extraHours * 52;
+  const newAnnual = baseAnnual + overtimeAnnual;
+  
+  // Calculate taxes for base and new
+  const baseTaxes = 
+    calculateFederalTax(baseAnnual, filingStatus) +
+    calculateFICA(baseAnnual) +
+    calculateStateTax(baseAnnual, state);
+  
+  const newTaxes = 
+    calculateFederalTax(newAnnual, filingStatus) +
+    calculateFICA(newAnnual) +
+    calculateStateTax(newAnnual, state);
+  
+  const grossIncrease = overtimeAnnual;
+  const taxesIncrease = newTaxes - baseTaxes;
+  const netIncrease = grossIncrease - taxesIncrease;
+  const effectiveTaxRate = (taxesIncrease / grossIncrease) * 100;
+  
+  return {
+    extraHours,
+    grossIncrease,
+    taxesIncrease,
+    netIncrease,
+    effectiveTaxRate,
+  };
+}
+
+// Job Comparison
+export interface JobOffer {
+  name: string;
+  hourlyRate: number;
+  hoursPerWeek: number;
+  state: string;
+}
+
+export interface JobComparisonResult {
+  job: JobOffer;
+  grossAnnual: number;
+  netAnnual: number;
+  netBiweekly: number;
+  netMonthly: number;
+  taxPercentage: number;
+}
+
+export function compareJobs(
+  jobs: JobOffer[],
+  filingStatus: 'single' | 'married' | 'head_of_household' = 'single'
+): JobComparisonResult[] {
+  return jobs.map(job => {
+    const result = calculateTakeHomePay({
+      payType: 'hourly',
+      hourlyRate: job.hourlyRate,
+      hoursPerWeek: job.hoursPerWeek,
+      state: job.state,
+      filingStatus,
+    });
+    
+    return {
+      job,
+      grossAnnual: result.grossAnnual,
+      netAnnual: result.netAnnual,
+      netBiweekly: result.netBiweekly,
+      netMonthly: result.netAnnual / 12,
+      taxPercentage: result.taxPercentage,
+    };
+  });
+}
+
+// State Comparison
+export interface StateComparisonResult {
+  currentState: string;
+  newState: string;
+  currentNetAnnual: number;
+  newNetAnnual: number;
+  difference: number;
+  differencePerMonth: number;
+  currentTaxRate: number;
+  newTaxRate: number;
+}
+
+export function compareStates(
+  hourlyRate: number,
+  hoursPerWeek: number,
+  currentState: string,
+  newState: string,
+  filingStatus: 'single' | 'married' | 'head_of_household' = 'single'
+): StateComparisonResult {
+  const currentResult = calculateTakeHomePay({
+    payType: 'hourly',
+    hourlyRate,
+    hoursPerWeek,
+    state: currentState,
+    filingStatus,
+  });
+  
+  const newResult = calculateTakeHomePay({
+    payType: 'hourly',
+    hourlyRate,
+    hoursPerWeek,
+    state: newState,
+    filingStatus,
+  });
+  
+  const difference = newResult.netAnnual - currentResult.netAnnual;
+  
+  return {
+    currentState,
+    newState,
+    currentNetAnnual: currentResult.netAnnual,
+    newNetAnnual: newResult.netAnnual,
+    difference,
+    differencePerMonth: difference / 12,
+    currentTaxRate: currentResult.taxPercentage,
+    newTaxRate: newResult.taxPercentage,
+  };
+}
+
+// Monthly Forecast
+export interface WeekForecast {
+  weekNumber: number;
+  hours: number;
+  overtimeHours: number;
+  grossPay: number;
+  netPay: number;
+}
+
+export interface MonthlyForecast {
+  weeks: WeekForecast[];
+  totalGross: number;
+  totalNet: number;
+  totalHours: number;
+  avgWeeklyNet: number;
+}
+
+export function forecastMonthly(
+  hourlyRate: number,
+  weeklyHours: number[],
+  state: string,
+  filingStatus: 'single' | 'married' | 'head_of_household' = 'single'
+): MonthlyForecast {
+  const weeks: WeekForecast[] = weeklyHours.map((hours, index) => {
+    const regularHours = Math.min(hours, 40);
+    const overtimeHours = Math.max(0, hours - 40);
+    
+    // Calculate weekly gross
+    const regularPay = regularHours * hourlyRate;
+    const overtimePay = overtimeHours * hourlyRate * 1.5;
+    const weeklyGross = regularPay + overtimePay;
+    
+    // Estimate net (approximate weekly from annual)
+    const annualEstimate = weeklyGross * 52;
+    const result = calculateTakeHomePay({
+      payType: 'hourly',
+      hourlyRate,
+      hoursPerWeek: hours,
+      state,
+      filingStatus,
+    });
+    const weeklyNet = result.netWeekly;
+    
+    return {
+      weekNumber: index + 1,
+      hours,
+      overtimeHours,
+      grossPay: weeklyGross,
+      netPay: weeklyNet,
+    };
+  });
+  
+  const totalGross = weeks.reduce((sum, week) => sum + week.grossPay, 0);
+  const totalNet = weeks.reduce((sum, week) => sum + week.netPay, 0);
+  const totalHours = weeks.reduce((sum, week) => sum + week.hours, 0);
+  
+  return {
+    weeks,
+    totalGross,
+    totalNet,
+    totalHours,
+    avgWeeklyNet: totalNet / weeks.length,
+  };
+}
+
+// Yearly Forecast
+export interface YearlyForecast {
+  monthlyNet: number[];
+  totalNet: number;
+  avgMonthlyNet: number;
+  totalHours: number;
+  avgWeeklyHours: number;
+}
+
+export function forecastYearly(
+  hourlyRate: number,
+  avgHoursPerWeek: number,
+  state: string,
+  filingStatus: 'single' | 'married' | 'head_of_household' = 'single'
+): YearlyForecast {
+  const result = calculateTakeHomePay({
+    payType: 'hourly',
+    hourlyRate,
+    hoursPerWeek: avgHoursPerWeek,
+    state,
+    filingStatus,
+  });
+  
+  // Monthly projection (52 weeks / 12 months)
+  const monthlyNet = result.netAnnual / 12;
+  
+  return {
+    monthlyNet: Array(12).fill(monthlyNet),
+    totalNet: result.netAnnual,
+    avgMonthlyNet: monthlyNet,
+    totalHours: avgHoursPerWeek * 52,
+    avgWeeklyHours: avgHoursPerWeek,
+  };
+}
+
+// Tax Bracket Proximity
+export interface TaxBracketInfo {
+  currentBracket: number;
+  nextBracket: number;
+  distanceToNextBracket: number;
+  withinThreshold: boolean; // Within $5k of next bracket
+}
+
+export function calculateTaxBracketProximity(
+  grossAnnual: number,
+  filingStatus: 'single' | 'married' | 'head_of_household' = 'single'
+): TaxBracketInfo {
+  const standardDeduction = STANDARD_DEDUCTIONS_2024[filingStatus];
+  const taxableIncome = Math.max(0, grossAnnual - standardDeduction);
+  
+  const brackets = FEDERAL_TAX_BRACKETS_2024[filingStatus];
+  let currentBracket = 0.10;
+  let nextBracket = 0.12;
+  let distanceToNextBracket = 0;
+  
+  for (let i = 0; i < brackets.length; i++) {
+    if (taxableIncome >= brackets[i].min && taxableIncome < brackets[i].max) {
+      currentBracket = brackets[i].rate;
+      if (i < brackets.length - 1) {
+        nextBracket = brackets[i + 1].rate;
+        distanceToNextBracket = brackets[i].max - taxableIncome;
+      }
+      break;
+    }
+  }
+  
+  return {
+    currentBracket: currentBracket * 100,
+    nextBracket: nextBracket * 100,
+    distanceToNextBracket,
+    withinThreshold: distanceToNextBracket > 0 && distanceToNextBracket < 5000,
+  };
+}
+
+// Get state name from code
+export function getStateName(code: string): string {
+  const states: Record<string, string> = {
+    TX: 'Texas', FL: 'Florida', CA: 'California', NY: 'New York',
+    IL: 'Illinois', PA: 'Pennsylvania', OH: 'Ohio', GA: 'Georgia',
+    NC: 'North Carolina', MI: 'Michigan', MA: 'Massachusetts',
+    VA: 'Virginia', NJ: 'New Jersey', NV: 'Nevada', WA: 'Washington',
+    WY: 'Wyoming', SD: 'South Dakota', TN: 'Tennessee', AK: 'Alaska',
+    NH: 'New Hampshire', AZ: 'Arizona', IN: 'Indiana', MO: 'Missouri',
+    MD: 'Maryland', WI: 'Wisconsin', CO: 'Colorado', MN: 'Minnesota',
+    SC: 'South Carolina', AL: 'Alabama', LA: 'Louisiana', KY: 'Kentucky',
+    OR: 'Oregon', OK: 'Oklahoma', CT: 'Connecticut', UT: 'Utah',
+    IA: 'Iowa', AR: 'Arkansas', MS: 'Mississippi', KS: 'Kansas',
+    NM: 'New Mexico', NE: 'Nebraska', ID: 'Idaho', WV: 'West Virginia',
+    HI: 'Hawaii', ME: 'Maine', MT: 'Montana', RI: 'Rhode Island',
+    DE: 'Delaware', ND: 'North Dakota', VT: 'Vermont', DC: 'Washington DC',
+  };
+  return states[code] || code;
+}
+
+// Get all states with tax info
+export function getAllStatesWithTax(): Array<{code: string; name: string; taxRate: number}> {
+  return Object.keys(STATE_TAX_RATES).map(code => ({
+    code,
+    name: getStateName(code),
+    taxRate: STATE_TAX_RATES[code],
+  })).sort((a, b) => a.name.localeCompare(b.name));
 }

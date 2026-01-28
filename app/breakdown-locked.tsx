@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Colors, Typography, Spacing } from '../src/constants/theme';
 
 export default function BreakdownLockedScreen() {
   const router = useRouter();
@@ -18,6 +19,13 @@ export default function BreakdownLockedScreen() {
         onPress={() => router.push('/paywall')}
       >
         <Text style={styles.buttonText}>See full breakdown</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.secondaryButton}
+        onPress={() => router.push('/(tabs)')}
+      >
+        <Text style={styles.secondaryButtonText}>No Thanks</Text>
       </TouchableOpacity>
 
       <Text style={styles.footnote}>Accurate for 2024 bi-weekly payroll</Text>
@@ -61,11 +69,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
+    marginBottom: 12,
   },
   buttonText: {
     color: '#ffffff',
     fontSize: 17,
     fontWeight: '600',
+  },
+  secondaryButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
   },
   footnote: {
     fontSize: 14,

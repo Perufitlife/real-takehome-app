@@ -1,18 +1,21 @@
 import { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trackEvent } from '../../src/lib/analytics';
 import { usePayInput } from '../../src/context/PayInputContext';
+import { Colors, Spacing, moderateScale, isSmallDevice } from '../../src/constants/theme';
+import { OnboardingHeader, OptionCard } from '../../src/components';
+
+const TOTAL_STEPS = 7;
 
 export default function PayTypeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { setPayType } = usePayInput();
 
   useEffect(() => {
-    trackEvent('onboarding_step_viewed', {
-      step: 'pay_type',
-      path: '/(onboarding)/pay-type'
-    });
+    trackEvent('onboarding_step_viewed', { step: 'pay_type' });
   }, []);
 
   const handleSelect = (type: 'salary' | 'hourly') => {
@@ -27,22 +30,42 @@ export default function PayTypeScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>How are you paid?</Text>
-      
-      <TouchableOpacity 
-        style={styles.optionButton}
-        onPress={() => handleSelect('salary')}
-      >
-        <Text style={styles.optionText}>Salary</Text>
-      </TouchableOpacity>
+    <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
+      {/* Header with Back & Progress */}
+      <OnboardingHeader currentStep={1} totalSteps={TOTAL_STEPS} />
 
-      <TouchableOpacity 
-        style={styles.optionButton}
-        onPress={() => handleSelect('hourly')}
-      >
-        <Text style={styles.optionText}>Hourly</Text>
-      </TouchableOpacity>
+      {/* Content */}
+      <View style={styles.content}>
+        {/* Title */}
+        <Text style={styles.title}>How do you get paid?</Text>
+        <Text style={styles.subtitle}>Choose the one that matches your job</Text>
+
+        {/* Options */}
+        <View style={styles.options}>
+          {/* Hourly - Primary recommendation */}
+          <OptionCard
+            title="Hourly"
+            subtitle="Paid per hour ($18/hr)"
+            icon="time-outline"
+            badge="Most common"
+            recommended
+            onPress={() => handleSelect('hourly')}
+          />
+
+          {/* Salary */}
+          <OptionCard
+            title="Salary"
+            subtitle="Fixed yearly ($60,000/yr)"
+            icon="briefcase-outline"
+            onPress={() => handleSelect('salary')}
+          />
+        </View>
+
+        {/* Footer Hint */}
+        <Text style={styles.footerHint}>
+          Most service, retail & warehouse jobs are hourly.
+        </Text>
+      </View>
     </View>
   );
 }
@@ -50,29 +73,33 @@ export default function PayTypeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.background,
+    paddingHorizontal: Spacing.xxl,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingBottom: isSmallDevice ? Spacing.xl : Spacing.huge,
   },
   title: {
-    fontSize: 32,
+    fontSize: moderateScale(24),
     fontWeight: '700',
-    marginBottom: 40,
-    color: '#000000',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
   },
-  optionButton: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: '#E5E5E5',
+  subtitle: {
+    fontSize: moderateScale(16),
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.xxxl,
   },
-  optionText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
+  options: {
+    marginBottom: Spacing.xl,
+  },
+  footerHint: {
+    fontSize: moderateScale(14),
+    color: Colors.textTertiary,
     textAlign: 'center',
   },
 });

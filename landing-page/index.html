@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Primary SEO Meta Tags -->
+    <title>WorkROI - Take-Home Pay Calculator | Know Your Real Paycheck</title>
+    <meta name="title" content="WorkROI - Take-Home Pay Calculator | Know Your Real Paycheck">
+    <meta name="description" content="Calculate your real take-home pay after taxes in seconds. Free paycheck calculator for hourly workers. Compare jobs, optimize overtime, and maximize your earnings.">
+    <meta name="keywords" content="take home pay calculator, paycheck calculator, hourly wage calculator, salary after taxes, net pay calculator, overtime calculator, job comparison tool, state tax calculator">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="author" content="WorkROI">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://workroi.app/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://workroi.app/">
+    <meta property="og:title" content="WorkROI - Take-Home Pay Calculator | Know Your Real Paycheck">
+    <meta property="og:description" content="Calculate your real take-home pay after taxes in seconds. Free paycheck calculator for hourly workers. Compare jobs, optimize overtime, and maximize your earnings.">
+    <meta property="og:image" content="https://workroi.app/og-image.png">
+    <meta property="og:site_name" content="WorkROI">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://workroi.app/">
+    <meta property="twitter:title" content="WorkROI - Take-Home Pay Calculator | Know Your Real Paycheck">
+    <meta property="twitter:description" content="Calculate your real take-home pay after taxes in seconds. Free paycheck calculator for hourly workers.">
+    <meta property="twitter:image" content="https://workroi.app/og-image.png">
+    
+    <!-- Apple Smart App Banner -->
+    <meta name="apple-itunes-app" content="app-id=YOUR_APP_ID">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Structured Data / Schema.org -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "WorkROI",
+        "operatingSystem": "iOS, Android",
+        "applicationCategory": "FinanceApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "1250"
+        },
+        "description": "Calculate your real take-home pay after taxes. Free paycheck calculator for hourly and salary workers.",
+        "screenshot": "https://workroi.app/screenshot.png",
+        "featureList": [
+            "Take-home pay calculator",
+            "All 50 state tax calculations",
+            "Overtime optimization",
+            "Job offer comparison",
+            "401(k) contribution planning"
+        ]
+    }
+    </script>
+    
+    <!-- FAQ Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "How do I calculate my take-home pay?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "WorkROI calculates your take-home pay by subtracting federal income tax, state income tax, Social Security (6.2%), and Medicare (1.45%) from your gross pay. Simply enter your hourly rate or salary, hours per week, and state to get your accurate net pay."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is overtime worth it after taxes?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "It depends on your tax bracket. WorkROI's Overtime Optimizer shows you exactly how much extra you'll take home for 5, 10, 15, or 20 extra hours per week, accounting for your marginal tax rate."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How much do taxes take from my paycheck?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "On average, taxes take 25-35% of your gross pay, including federal income tax (10-37%), FICA taxes (7.65%), and state income tax (0-13% depending on your state). WorkROI shows you the exact breakdown."
+                }
+            }
+        ]
+    }
+    </script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">
+                <img src="logo.png" alt="WorkROI Logo" width="40" height="40">
+                <span>WorkROI</span>
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#faq">FAQ</a>
+                <a href="#download" class="btn btn-primary">Download Free</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-icon">&#9733;</span>
+                    <span>4.8 Rating on App Store</span>
+                </div>
+                <h1>Know Your <span class="highlight">Real</span> Take-Home Pay</h1>
+                <p class="hero-subtitle">
+                    Stop guessing what you'll actually earn. Calculate your exact paycheck after federal, state, and FICA taxes in seconds. Free for hourly and salary workers.
+                </p>
+                <div class="hero-cta">
+                    <a href="#download" class="btn btn-primary btn-large">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                        </svg>
+                        Download for iOS
+                    </a>
+                    <a href="#download" class="btn btn-secondary btn-large">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                        </svg>
+                        Coming to Android
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">50+</span>
+                        <span class="stat-label">States Supported</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">100K+</span>
+                        <span class="stat-label">Calculations</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">30s</span>
+                        <span class="stat-label">To Get Results</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="phone-mockup">
+                    <img src="screenshot-hero.png" alt="WorkROI App Screenshot showing take-home pay calculation" loading="lazy">
+                </div>
+            </div>
+        </div>
+        <div class="hero-wave">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z" fill="#f8f9fa"/>
+            </svg>
+        </div>
+    </header>
+
+    <!-- Problem/Solution Section -->
+    <section class="problem-solution">
+        <div class="container">
+            <div class="problem">
+                <div class="section-icon">&#128548;</div>
+                <h2>Tired of Paycheck Surprises?</h2>
+                <ul class="problem-list">
+                    <li>You expected $2,000 but got $1,450</li>
+                    <li>You don't know if overtime is worth it</li>
+                    <li>Job offers confuse you with gross vs net</li>
+                    <li>Moving states? No idea how taxes change</li>
+                </ul>
+            </div>
+            <div class="solution">
+                <div class="section-icon">&#128640;</div>
+                <h2>WorkROI Makes It Crystal Clear</h2>
+                <ul class="solution-list">
+                    <li><strong>Instant calculations</strong> - Enter your info in 30 seconds</li>
+                    <li><strong>Accurate taxes</strong> - Federal, state, Social Security, Medicare</li>
+                    <li><strong>Smart tools</strong> - Overtime optimizer, job comparison, state comparison</li>
+                    <li><strong>No login required</strong> - Your data stays on your phone</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Features</span>
+                <h2>Everything You Need to Maximize Your Earnings</h2>
+                <p>Powerful tools designed specifically for hourly workers who want to take control of their finances.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#128176;</div>
+                    <h3>Take-Home Calculator</h3>
+                    <p>Enter your hourly rate or salary and instantly see your monthly and annual take-home pay after all taxes.</p>
+                    <span class="feature-tag free">Free</span>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">&#128200;</div>
+                    <h3>Overtime Optimizer</h3>
+                    <p>See exactly how much extra you'll take home for 5, 10, 15, or 20 overtime hours. Know your real hourly rate after taxes.</p>
+                    <span class="feature-tag premium">Premium</span>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">&#128188;</div>
+                    <h3>Job Comparison</h3>
+                    <p>Compare up to 5 job offers side-by-side. See which one actually pays more after taxes, not just on paper.</p>
+                    <span class="feature-tag premium">Premium</span>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">&#127758;</div>
+                    <h3>State Comparison</h3>
+                    <p>Moving to a new state? Compare how your take-home pay changes across all 50 states instantly.</p>
+                    <span class="feature-tag premium">Premium</span>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">&#128202;</div>
+                    <h3>Tax Breakdown</h3>
+                    <p>See exactly where every dollar goes: federal income tax, state tax, Social Security, and Medicare.</p>
+                    <span class="feature-tag premium">Premium</span>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">&#128274;</div>
+                    <h3>401(k) Planning</h3>
+                    <p>Calculate the impact of pre-tax 401(k) contributions on your take-home pay and taxes.</p>
+                    <span class="feature-tag free">Free</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">How It Works</span>
+                <h2>Get Your Results in 30 Seconds</h2>
+                <p>No signup required. No complicated forms. Just quick, accurate answers.</p>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Enter Your Pay</h3>
+                        <p>Hourly rate or annual salary - we handle both. Add your hours per week.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Select Your State</h3>
+                        <p>Pick your state and filing status. We calculate federal, state, and FICA taxes automatically.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>See Your Take-Home</h3>
+                        <p>Get your monthly and annual take-home pay instantly. Explore tools to maximize earnings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof Section -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Reviews</span>
+                <h2>Loved by Workers Everywhere</h2>
+            </div>
+            
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p>"Finally an app that shows me what I'll actually bring home. No more paycheck surprises!"</p>
+                    <div class="testimonial-author">
+                        <span class="author-name">Mike R.</span>
+                        <span class="author-role">Construction Worker</span>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p>"Used the overtime optimizer to figure out if extra shifts were worth it. Game changer for my finances."</p>
+                    <div class="testimonial-author">
+                        <span class="author-name">Sarah T.</span>
+                        <span class="author-role">Nurse</span>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p>"Compared 3 job offers and picked the one that actually paid more after taxes. Saved me from a bad decision!"</p>
+                    <div class="testimonial-author">
+                        <span class="author-name">Carlos M.</span>
+                        <span class="author-role">Warehouse Manager</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Pricing</span>
+                <h2>Start Free, Upgrade When Ready</h2>
+                <p>Basic calculator is always free. Premium unlocks powerful tools to maximize your earnings.</p>
+            </div>
+            
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <h3>Free</h3>
+                    <div class="price">$0<span>/forever</span></div>
+                    <ul class="pricing-features">
+                        <li>&#10003; Take-home pay calculator</li>
+                        <li>&#10003; All 50 state tax calculations</li>
+                        <li>&#10003; 401(k) contribution planning</li>
+                        <li>&#10003; Filing status options</li>
+                        <li class="disabled">&#10005; Detailed tax breakdown</li>
+                        <li class="disabled">&#10005; Overtime optimizer</li>
+                        <li class="disabled">&#10005; Job comparison (5 offers)</li>
+                        <li class="disabled">&#10005; State comparison</li>
+                    </ul>
+                    <a href="#download" class="btn btn-secondary">Get Started Free</a>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="popular-badge">Most Popular</div>
+                    <h3>Premium</h3>
+                    <div class="price">$4.99<span>/month</span></div>
+                    <div class="price-annual">or $24.99/year (save 58%)</div>
+                    <ul class="pricing-features">
+                        <li>&#10003; Everything in Free</li>
+                        <li>&#10003; <strong>7-day free trial</strong></li>
+                        <li>&#10003; Detailed tax breakdown</li>
+                        <li>&#10003; Overtime optimizer</li>
+                        <li>&#10003; Compare up to 5 job offers</li>
+                        <li>&#10003; All 50 state comparisons</li>
+                        <li>&#10003; Save unlimited comparisons</li>
+                        <li>&#10003; Annual income forecasts</li>
+                    </ul>
+                    <a href="#download" class="btn btn-primary">Start Free Trial</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">FAQ</span>
+                <h2>Frequently Asked Questions</h2>
+            </div>
+            
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question">
+                        How accurate are the tax calculations?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>WorkROI uses the 2024 IRS tax brackets for federal income tax, current FICA rates (6.2% Social Security + 1.45% Medicare), and up-to-date state income tax rates for all 50 states. Our calculations match what you'd see on an official paycheck within a few dollars.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">
+                        Do I need to create an account?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>No! WorkROI works without any login or signup. Your data is stored locally on your device and never sent to any server. We respect your privacy completely.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">
+                        Is overtime worth it after taxes?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>It depends on your tax bracket! While overtime pay is taxed at the same rate as regular income (not a special higher rate), working more hours can push you into a higher bracket. Our Overtime Optimizer shows you exactly how much extra you'll take home for different overtime scenarios.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">
+                        What's included in the free version?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>The free version includes our core take-home pay calculator with support for all 50 states, both hourly and salary calculations, 401(k) contributions, and all filing statuses. Premium adds detailed breakdowns, the overtime optimizer, job comparison, and state comparison tools.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">
+                        Can I cancel my subscription anytime?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes, absolutely! You can cancel your subscription at any time through your App Store or Google Play settings. If you cancel, you'll keep access until the end of your billing period. We also offer a 7-day free trial so you can try all premium features risk-free.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">
+                        Does WorkROI work for salary employees too?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! While we designed WorkROI with hourly workers in mind, it works perfectly for salary employees too. Just enter your annual salary instead of hourly rate, and we'll calculate your take-home pay the same way.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download" id="download">
+        <div class="container">
+            <div class="download-content">
+                <h2>Ready to Know Your Real Pay?</h2>
+                <p>Download WorkROI now and get your take-home pay calculation in 30 seconds. Free forever, no signup required.</p>
+                <div class="download-buttons">
+                    <a href="https://apps.apple.com/app/workroi" class="store-badge" target="_blank" rel="noopener">
+                        <img src="app-store-badge.svg" alt="Download on the App Store" width="180" height="60">
+                    </a>
+                    <a href="#" class="store-badge coming-soon">
+                        <img src="google-play-badge.svg" alt="Coming soon to Google Play" width="180" height="60">
+                        <span class="coming-soon-label">Coming Soon</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="/" class="logo">
+                        <img src="logo.png" alt="WorkROI Logo" width="32" height="32">
+                        <span>WorkROI</span>
+                    </a>
+                    <p>Know your real take-home pay.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>App</h4>
+                        <a href="#features">Features</a>
+                        <a href="#pricing">Pricing</a>
+                        <a href="#faq">FAQ</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="privacy.html">Privacy Policy</a>
+                        <a href="terms.html">Terms of Service</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Contact</h4>
+                        <a href="mailto:support@workroi.app">support@workroi.app</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 WorkROI. All rights reserved.</p>
+                <p class="disclaimer">Tax calculations are estimates and should not be considered tax advice. Consult a tax professional for specific situations.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>

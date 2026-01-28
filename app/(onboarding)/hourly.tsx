@@ -1,95 +1,107 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { trackEvent } from '../../src/lib/analytics';
 import { usePayInput } from '../../src/context/PayInputContext';
+import { Colors, Spacing, scale, moderateScale, isSmallDevice } from '../../src/constants/theme';
+import { OnboardingHeader, NumericKeypad, PrimaryButton } from '../../src/components';
+
+const TOTAL_STEPS = 7;
+const MIN_HOURLY = 5;
+const MAX_HOURLY = 200;
 
 export default function HourlyScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { setHourlyRate } = usePayInput();
-  const [rate, setRate] = useState('25');
+  const [rate, setRate] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    trackEvent('onboarding_step_viewed', {
-      step: 'hourly',
-      path: '/(onboarding)/hourly'
-    });
+    trackEvent('onboarding_step_viewed', { step: 'hourly' });
   }, []);
 
   const handleNumber = (num: string) => {
-    if (rate === '0') {
+    if (error) setError(null);
+    
+    if (rate === '' || rate === '0') {
       setRate(num);
     } else if (rate.length < 6) {
       setRate(rate + num);
     }
   };
 
-  const handleDecimal = () => {
-    if (!rate.includes('.')) {
-      setRate(rate + '.');
-    }
-  };
-
   const handleBackspace = () => {
+    if (error) setError(null);
+    
     if (rate.length > 1) {
       setRate(rate.slice(0, -1));
     } else {
-      setRate('0');
+      setRate('');
     }
   };
 
   const handleContinue = () => {
-    setHourlyRate(parseFloat(rate));
+    const numericRate = Number(rate);
+    
+    if (numericRate < MIN_HOURLY) {
+      setError('That looks too low for an hourly rate.');
+      return;
+    }
+    if (numericRate > MAX_HOURLY) {
+      setError('That looks unusually high.');
+      return;
+    }
+
+    setHourlyRate(numericRate);
+    trackEvent('hourly_rate_entered', { hourlyRate: numericRate });
     router.push('/(onboarding)/hours');
   };
 
+  const numericRate = Number(rate || '0');
+  const isValid = numericRate >= MIN_HOURLY && numericRate <= MAX_HOURLY;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>What's your hourly rate?</Text>
-      
-      <View style={styles.inputContainer}>
-        <Text style={styles.input}>$ {rate} <Text style={styles.unit}>/hr</Text></Text>
-        <Text style={styles.hint}>Before taxes and overtime</Text>
+    <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
+      {/* Header */}
+      <OnboardingHeader currentStep={2} totalSteps={TOTAL_STEPS} />
+
+      {/* Title Section */}
+      <View style={styles.titleSection}>
+        <Text style={styles.title}>What's your hourly rate?</Text>
+        <Text style={styles.hint}>Before taxes</Text>
       </View>
 
-      <Text style={styles.label}>Hourly pay</Text>
-
-      <View style={styles.keypad}>
-        {[['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9']].map((row, i) => (
-          <View key={i} style={styles.keypadRow}>
-            {row.map((num) => (
-              <TouchableOpacity
-                key={num}
-                style={styles.key}
-                onPress={() => handleNumber(num)}
-              >
-                <Text style={styles.keyText}>{num}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ))}
-        <View style={styles.keypadRow}>
-          <View style={styles.key} />
-          <TouchableOpacity
-            style={styles.key}
-            onPress={() => handleNumber('0')}
-          >
-            <Text style={styles.keyText}>0</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.key, styles.backspaceKey]}
-            onPress={handleBackspace}
-          >
-            <Text style={styles.keyText}>⌫</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Display */}
+      <View style={styles.displayContainer}>
+        <Text style={[styles.display, error && styles.displayError]}>
+          <Text style={styles.dollarSign}>$ </Text>
+          {rate || '0'}
+          <Text style={styles.unit}> /hr</Text>
+        </Text>
+        <View style={styles.underline} />
+        {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
 
-      {parseFloat(rate) > 0 && (
-        <TouchableOpacity style={styles.button} onPress={handleContinue}>
-          <Text style={styles.buttonText}>Continue</Text>
-        </TouchableOpacity>
-      )}
+      {/* Spacer */}
+      <View style={styles.spacer} />
+
+      {/* Keypad */}
+      <NumericKeypad
+        onPress={handleNumber}
+        onBackspace={handleBackspace}
+      />
+
+      {/* Bottom Section */}
+      <View style={[styles.bottomSection, { paddingBottom: insets.bottom + Spacing.md }]}>
+        <Text style={styles.rangeHint}>Most rates: $10–$40/hr</Text>
+        <PrimaryButton
+          title="Continue"
+          onPress={handleContinue}
+          disabled={!isValid}
+        />
+      </View>
     </View>
   );
 }
@@ -97,75 +109,67 @@ export default function HourlyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.background,
+    paddingHorizontal: Spacing.xxl,
+  },
+  titleSection: {
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
   },
   title: {
-    fontSize: 28,
+    fontSize: moderateScale(22),
     fontWeight: '700',
-    marginBottom: 40,
-    color: '#000000',
-  },
-  inputContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  input: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: 8,
-  },
-  unit: {
-    fontSize: 32,
-    color: '#999999',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: Spacing.xs,
   },
   hint: {
-    fontSize: 15,
-    color: '#999999',
+    fontSize: moderateScale(14),
+    color: Colors.textTertiary,
   },
-  label: {
-    fontSize: 15,
-    color: '#999999',
+  displayContainer: {
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  display: {
+    fontSize: scale(40),
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
+  },
+  displayError: {
+    color: Colors.warning,
+  },
+  dollarSign: {
+    color: Colors.textSecondary,
+  },
+  unit: {
+    fontSize: scale(26),
+    color: Colors.textSecondary,
+  },
+  underline: {
+    width: scale(140),
+    height: 3,
+    backgroundColor: Colors.primary,
+    borderRadius: 2,
+  },
+  errorText: {
+    fontSize: moderateScale(13),
+    color: Colors.warning,
+    marginTop: Spacing.md,
     textAlign: 'center',
-    marginBottom: 40,
   },
-  keypad: {
-    marginTop: 'auto',
-    marginBottom: 20,
+  spacer: {
+    flex: 1,
+    minHeight: isSmallDevice ? Spacing.md : Spacing.xl,
   },
-  keypadRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 12,
+  bottomSection: {
+    marginTop: Spacing.lg,
   },
-  key: {
-    width: 80,
-    height: 60,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 8,
-  },
-  backspaceKey: {
-    backgroundColor: '#E5E5E5',
-  },
-  keyText: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#000000',
-  },
-  button: {
-    backgroundColor: '#000000',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '600',
+  rangeHint: {
+    fontSize: moderateScale(13),
+    color: Colors.textTertiary,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
   },
 });
