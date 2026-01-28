@@ -13,14 +13,19 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.workroi.app"
+      "bundleIdentifier": "com.workroi.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads and improve app experience."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.workroi.app"
+      "package": "com.workroi.app",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -28,19 +33,20 @@
     "plugins": [
       "expo-router",
       "expo-updates",
-      "expo-asset"
+      "expo-asset",
+      "expo-store-review"
     ],
     "scheme": "workroi",
     "runtimeVersion": "1.0.0",
     "updates": {
-      "url": "https://u.expo.dev/YOUR-PROJECT-ID"
+      "url": "https://u.expo.dev/b93d67dd-77f9-4d2e-b8e9-854932ea6e29"
     },
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "YOUR-PROJECT-ID"
+        "projectId": "b93d67dd-77f9-4d2e-b8e9-854932ea6e29"
       }
     }
   }

@@ -1,7 +1,7 @@
-// Design System - Real TakeHome
+// Design System - WorkROI
 // Optimized for clarity and usability
 
-import { Dimensions, Platform, PixelRatio } from 'react-native';
+import { Dimensions } from 'react-native';
 
 // =============================================================================
 // RESPONSIVE UTILITIES

@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { trackEvent } from '../src/lib/analytics';
 import { usePayInput } from '../src/context/PayInputContext';
+import { incrementCalculations, maybeRequestReview } from '../src/lib/reviewService';
 import { hasFullBreakdown } from '../src/lib/subscriptions';
 import { Colors, Typography, Spacing, BorderRadius, formatCurrency, formatHourly, getStateName, scale, moderateScale, isSmallDevice } from '../src/constants/theme';
 import { PrimaryButton } from '../src/components';
@@ -23,12 +24,16 @@ export default function ResultsScreen() {
   useEffect(() => {
     // Check premium status
     hasFullBreakdown().then(setIsPremium);
-    
+
+    incrementCalculations();
+
     trackEvent(isFirstTime ? 'results_with_hooks_viewed' : 'results_viewed', {
       net_monthly: Math.round((payResult?.netAnnual || 0) / 12),
       net_annual: Math.round(payResult?.netAnnual || 0),
       first_time: isFirstTime,
     });
+
+    maybeRequestReview('results_viewed');
   }, []);
 
   if (!payResult) {

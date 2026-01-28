@@ -359,7 +359,11 @@ export function compareStates(
   hoursPerWeek: number,
   currentState: string,
   newState: string,
-  filingStatus: 'single' | 'married' | 'head_of_household' = 'single'
+  filingStatus: 'single' | 'married' | 'head_of_household' = 'single',
+  contribution401k?: number,
+  contributionType?: 'percent' | 'dollar',
+  hasOvertime?: boolean,
+  overtimeMultiplier?: number
 ): StateComparisonResult {
   const currentResult = calculateTakeHomePay({
     payType: 'hourly',
@@ -367,6 +371,10 @@ export function compareStates(
     hoursPerWeek,
     state: currentState,
     filingStatus,
+    contribution401k,
+    contributionType,
+    hasOvertime,
+    overtimeMultiplier,
   });
   
   const newResult = calculateTakeHomePay({
@@ -375,6 +383,10 @@ export function compareStates(
     hoursPerWeek,
     state: newState,
     filingStatus,
+    contribution401k,
+    contributionType,
+    hasOvertime,
+    overtimeMultiplier,
   });
   
   const difference = newResult.netAnnual - currentResult.netAnnual;
@@ -386,8 +398,8 @@ export function compareStates(
     newNetAnnual: newResult.netAnnual,
     difference,
     differencePerMonth: difference / 12,
-    currentTaxRate: currentResult.taxPercentage,
-    newTaxRate: newResult.taxPercentage,
+    currentTaxRate: STATE_TAX_RATES[currentState] || 0,
+    newTaxRate: STATE_TAX_RATES[newState] || 0,
   };
 }
 

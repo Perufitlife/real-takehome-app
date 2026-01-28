@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePayInput } from '../src/context/PayInputContext';
 import { useComparisons } from '../src/context/ComparisonsContext';
 import { trackEvent } from '../src/lib/analytics';
+import { incrementComparisonsSaved, maybeRequestReview } from '../src/lib/reviewService';
 import { ToolHeader, PrimaryButton } from '../src/components';
 import { Colors, Spacing, BorderRadius, formatCurrency, formatPercent, scale, moderateScale } from '../src/constants/theme';
 import { compareStates, getAllStatesWithTax, getStateName, StateComparisonResult } from '../src/lib/payCalculator';
@@ -42,7 +43,11 @@ export default function StateComparisonScreen() {
       payInput.hoursPerWeek,
       payInput.state,
       stateCode,
-      payInput.filingStatus || 'single'
+      payInput.filingStatus || 'single',
+      payInput.contribution401k || undefined,
+      payInput.contributionType || undefined,
+      payInput.hasOvertime || undefined,
+      payInput.overtimeMultiplier
     );
 
     setComparisonResult(result);
@@ -54,9 +59,9 @@ export default function StateComparisonScreen() {
     });
   };
 
-  const handleSaveComparison = () => {
+  const handleSaveComparison = async () => {
     if (!comparisonResult) return;
-    
+
     comparisons.saveStateComparison({
       name: `${getStateName(comparisonResult.currentState)} vs ${getStateName(comparisonResult.newState)}`,
       currentState: comparisonResult.currentState,
@@ -65,12 +70,16 @@ export default function StateComparisonScreen() {
       differencePerMonth: comparisonResult.differencePerMonth,
     });
 
+    await incrementComparisonsSaved();
+
     trackEvent('state_comparison_saved', {
       current_state: comparisonResult.currentState,
       new_state: comparisonResult.newState,
     });
 
     Alert.alert('Saved!', 'Comparison saved to your Tools tab');
+
+    maybeRequestReview('state_comparison_saved');
   };
 
   if (!payInput.hourlyRate || !payInput.state) {
@@ -167,7 +176,7 @@ export default function StateComparisonScreen() {
               <Text style={styles.taxRate}>
                 {comparisonResult.newTaxRate === 0 
                   ? 'No state income tax ✅'
-                  : `${formatPercent(comparisonResult.newTaxRate)} state tax`
+                  : `${formatPercent(comparisonResult.newTaxRate * 100)} state tax`
                 }
               </Text>
               

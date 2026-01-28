@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { trackEvent } from '../src/lib/analytics';
+import { maybeRequestReview } from '../src/lib/reviewService';
 import { usePayInput } from '../src/context/PayInputContext';
 import { getOfferings, purchasePackage, hasFullBreakdown } from '../src/lib/subscriptions';
 import { calculateOvertimePay, getStateName } from '../src/lib/payCalculator';
@@ -83,7 +84,7 @@ export default function PaywallScreen() {
   const potentialSavings = calculatePotentialSavings();
   const monthlyPrice = offerings?.current?.monthly?.product?.priceString || '$9.99';
   const annualPrice = offerings?.current?.annual?.product?.priceString || '$59.99';
-  const monthlyEquivalent = '$4.99';
+  const monthlyEquivalent = '$5.00';
   const savingsPercent = '50%';
 
   const handlePurchase = async () => {
@@ -103,7 +104,9 @@ export default function PaywallScreen() {
         plan: selectedPlan,
         revenue: selectedPlan === 'annual' ? 59.99 : 9.99,
       });
-      
+
+      maybeRequestReview('purchase_completed');
+
       // Navigate to dashboard
       router.replace('/(tabs)');
     } catch (error: any) {

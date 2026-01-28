@@ -43,7 +43,11 @@ export default function StatePreviewScreen() {
     payInput.hoursPerWeek || 40,
     payInput.state,
     exampleState,
-    payInput.filingStatus || 'single'
+    payInput.filingStatus || 'single',
+    payInput.contribution401k || undefined,
+    payInput.contributionType || undefined,
+    payInput.hasOvertime || undefined,
+    payInput.overtimeMultiplier
   );
 
   const handleUnlock = () => {
@@ -133,7 +137,7 @@ export default function StatePreviewScreen() {
           title="Unlock All States"
           onPress={handleUnlock}
         />
-        <Text style={styles.priceHint}>Full access for $4.99/month</Text>
+        <Text style={styles.priceHint}>Full access for $9.99/month</Text>
       </View>
     </View>
   );

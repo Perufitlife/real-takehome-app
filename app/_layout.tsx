@@ -3,6 +3,7 @@ import { InteractionManager } from 'react-native';
 import { Stack } from 'expo-router';
 import { Asset } from 'expo-asset';
 import { initializeAnalytics, trackEvent, getBuildVersion } from '../src/lib/analytics';
+import { incrementAppOpen } from '../src/lib/reviewService';
 import { PayInputProvider } from '../src/context/PayInputContext';
 import { ComparisonsProvider } from '../src/context/ComparisonsContext';
 import { initializeRevenueCat } from '../src/lib/subscriptions';
@@ -21,6 +22,7 @@ export default function RootLayout() {
       const init = async () => {
         await initializeAnalytics();
         await initializeRevenueCat();
+        await incrementAppOpen();
         trackEvent('app_opened', { source: 'cold', build_version: getBuildVersion() });
       };
       init();

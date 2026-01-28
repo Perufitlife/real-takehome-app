@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePayInput } from '../src/context/PayInputContext';
 import { useComparisons } from '../src/context/ComparisonsContext';
 import { trackEvent } from '../src/lib/analytics';
+import { incrementComparisonsSaved, maybeRequestReview } from '../src/lib/reviewService';
 import { ToolHeader, PrimaryButton } from '../src/components';
 import { Colors, Spacing, BorderRadius, formatCurrency, formatHourly, scale, moderateScale } from '../src/constants/theme';
 import { compareJobs, JobOffer, JobComparisonResult, getStateName } from '../src/lib/payCalculator';
@@ -86,16 +87,18 @@ export default function JobComparisonScreen() {
 
   const winnerIndex = findWinner();
 
-  const handleSaveComparison = () => {
+  const handleSaveComparison = async () => {
     if (results.length === 0) return;
 
     const jobs = showJob2 ? [currentJob, newJob1, newJob2] : [currentJob, newJob1];
-    
+
     comparisons.saveJobComparison({
       name: `${currentJob.name} vs ${newJob1.name}`,
       jobs,
       winnerIndex,
     });
+
+    await incrementComparisonsSaved();
 
     trackEvent('job_comparison_saved', {
       num_jobs: jobs.length,
@@ -103,6 +106,8 @@ export default function JobComparisonScreen() {
     });
 
     Alert.alert('Saved!', 'Comparison saved to your Tools tab');
+
+    maybeRequestReview('job_comparison_saved');
   };
 
   if (!payInput.hourlyRate) {

@@ -79,12 +79,12 @@ export default function SettingsScreen() {
 
   const handlePrivacyPolicy = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Linking.openURL('https://realtakehome.app/privacy');
+    Linking.openURL('https://workroi.app/privacy.html');
   };
 
   const handleTerms = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Linking.openURL('https://realtakehome.app/terms');
+    Linking.openURL('https://workroi.app/terms.html');
   };
 
   return (

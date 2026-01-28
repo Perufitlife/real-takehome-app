@@ -136,7 +136,7 @@ export default function JobPreviewScreen() {
           title="Unlock All Comparisons"
           onPress={handleUnlock}
         />
-        <Text style={styles.priceHint}>Full access for $4.99/month</Text>
+        <Text style={styles.priceHint}>Full access for $9.99/month</Text>
       </View>
     </View>
   );

@@ -12,7 +12,7 @@ const PREMIUM_KEY = 'premium_status';
 const PREMIUM_PLAN_KEY = 'premium_plan';
 
 if (isExpoGo) {
-  console.log('🟢 Running in Expo Go - Using local premium status');
+  // Expo Go: using local premium status for testing
 }
 
 export const initializeRevenueCat = async () => {
@@ -80,7 +80,6 @@ export const checkEntitlement = async (entitlementId: string): Promise<boolean> 
 export const getOfferings = async (): Promise<PurchasesOfferings | null> => {
   // Bypass en Expo Go - retornar mock offerings
   if (isExpoGo) {
-    console.log('🟢 Expo Go: Returning mock offerings');
     return {
       current: {
         monthly: {
@@ -116,7 +115,6 @@ export const getOfferings = async (): Promise<PurchasesOfferings | null> => {
 export const purchasePackage = async (pkg: any, plan?: 'monthly' | 'annual'): Promise<{ customerInfo: CustomerInfo }> => {
   // Bypass en Expo Go - simular compra exitosa y persistir
   if (isExpoGo) {
-    console.log('🟢 Expo Go: Simulating successful purchase');
     // Simular un pequeño delay para que se vea real
     await new Promise(resolve => setTimeout(resolve, 1000));
     // Persistir el estado premium
